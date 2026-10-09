@@ -15,5 +15,3 @@
 *.unitypackage
 *.zip
 
-# built by the listing action, never committed
-/Website/
