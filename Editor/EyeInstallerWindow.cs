@@ -200,7 +200,7 @@ namespace DocMe.EyeInstaller
         GUIContent GC(string en, string jp, string tEn = null, string tJp = null)
             => new GUIContent(L(en, jp), tEn == null ? null : L(tEn, tJp));
 
-        GUIStyle _title, _big, _hint, _ok, _warn, _box, _choice;
+        GUIStyle _title, _big, _hint, _ok, _warn, _sel, _box, _choice;
         void EnsureStyles()
         {
             if (_box != null) return;
@@ -212,6 +212,8 @@ namespace DocMe.EyeInstaller
             _ok.normal.textColor = new Color(0.35f, 0.75f, 0.4f);
             _warn   = new GUIStyle(EditorStyles.label) { wordWrap = true, fontStyle = FontStyle.Bold };
             _warn.normal.textColor = new Color(0.95f, 0.65f, 0.25f);
+            _sel    = new GUIStyle(EditorStyles.label) { wordWrap = true, fontStyle = FontStyle.Bold };
+            _sel.normal.textColor = new Color(1f, 0.55f, 0.5f);
             _box    = new GUIStyle(EditorStyles.helpBox) { padding = new RectOffset(12, 12, 10, 10) };
             _choice = new GUIStyle(EditorStyles.helpBox) { padding = new RectOffset(10, 10, 8, 8) };
         }
@@ -600,23 +602,39 @@ namespace DocMe.EyeInstaller
             using (new EditorGUILayout.VerticalScope(_box))
             {
                 GUILayout.Label(L("Something still showing over the eye?", "目の上にまだ何か見えていますか？"), EditorStyles.boldLabel);
-                GUILayout.Label(L("Highlights or decorations from the old eye can sit on top of the new one. Click them in the Scene view and they disappear.",
-                                  "元の目のハイライトや飾りが新しい目の上に残ることがあります。シーンでクリックすると消えます。"), _hint);
+                GUILayout.Label(L("Highlights or decorations from the old eye can sit on top of the new one. Select them in the Scene view, then press Hide.",
+                                  "元の目のハイライトや飾りが新しい目の上に残ることがあります。シーンで選んでから「隠す」を押してください。"), _hint);
                 bool hiding = pickMode == HideKey;
-                int hidden = HiddenCount();
+                int hidden = HiddenCount(), selected = SelectedCount();
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     GUI.backgroundColor = hiding ? new Color(0.6f, 0.8f, 1f) : Color.white;
-                    if (GUILayout.Button(hiding ? L("Clicking… press when done", "選択中… 終わったら押す") : L("Click parts to hide", "隠す部分をクリック"), GUILayout.Height(26)))
+                    if (GUILayout.Button(GC(hiding ? "Selecting… press to stop" : "Select parts to hide", hiding ? "選択中… 押すと終了" : "隠す部分を選択",
+                                            "Click parts in the Scene view to select them; click a selected part again to unselect it.",
+                                            "シーンで部分をクリックして選びます。選んだ部分をもう一度クリックすると外れます。"), GUILayout.Height(26)))
                     { pickMode = hiding ? null : HideKey; SceneView.RepaintAll(); }
+                    GUI.backgroundColor = selected > 0 ? new Color(0.6f, 0.9f, 0.65f) : Color.white;
+                    using (new EditorGUI.DisabledScope(selected == 0))
+                        if (GUILayout.Button(GC(selected == 0 ? "Hide selected parts" : selected == 1 ? "Hide 1 selected part" : $"Hide {selected} selected parts", selected == 0 ? "選択した部分を隠す" : $"選択した {selected} 箇所を隠す",
+                                                "Hides all selected parts in one go. Enter in the Scene view does the same.",
+                                                "選択した部分をまとめて隠します。シーンで Enter を押しても同じです。"), GUILayout.Height(26), GUILayout.Width(160)))
+                            HideSelected();
                     GUI.backgroundColor = Color.white;
-                    using (new EditorGUI.DisabledScope(hidden == 0))
-                    {
-                        if (GUILayout.Button(L("Undo last", "最後を取り消す"), GUILayout.Width(90), GUILayout.Height(26))) UndoLastHide();
-                        if (GUILayout.Button(L("Show all", "全て表示"), GUILayout.Width(80), GUILayout.Height(26))) ClearHides();
-                    }
                 }
-                if (hidden > 0) GUILayout.Label(L($"{hidden} {(hidden == 1 ? "part" : "parts")} hidden.", $"{hidden} 箇所を隠しました。"), _ok);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    using (new EditorGUI.DisabledScope(hidden == 0 && selected == 0))
+                        if (GUILayout.Button(GC("Undo last", "最後を取り消す",
+                                                "Takes back the last selected part, or the last hidden part when nothing is selected.",
+                                                "最後に選んだ部分を外します。何も選んでいなければ最後に隠した部分を戻します。"), GUILayout.Width(100), GUILayout.Height(22)))
+                            UndoLastHide();
+                    using (new EditorGUI.DisabledScope(hidden == 0))
+                        if (GUILayout.Button(GC("Show all", "全て表示", "Brings every hidden part back.", "隠した部分をすべて戻します。"), GUILayout.Width(90), GUILayout.Height(22)))
+                            ClearHides();
+                    GUILayout.FlexibleSpace();
+                }
+                if (selected > 0) GUILayout.Label(L(selected == 1 ? "1 part selected. Press Hide." : $"{selected} parts selected. Press Hide.", $"{selected} 箇所を選択中。「隠す」を押してください。"), _sel);
+                if (hidden > 0) GUILayout.Label(L(hidden == 1 ? "1 part hidden." : $"{hidden} parts hidden.", $"{hidden} 箇所を隠しました。"), _ok);
             }
 
             EditorGUILayout.Space(4);
@@ -660,7 +678,7 @@ namespace DocMe.EyeInstaller
                     "Deleting stops other blendshapes from pulling them back into view.", "削除すると他のブレンドシェイプで再表示されなくなります。"), hides.deleteGeometry);
                 using (new EditorGUI.DisabledScope(hides.deleteGeometry))
                     hides.sinkIntoHead = EditorGUILayout.ToggleLeft(GC("Fold hidden parts into the head", "隠す部分を頭の中に畳み込む"), hides.sinkIntoHead);
-                if (EditorGUI.EndChangeCheck()) { SaveSettings(); if (hides.Count > 0) hides.Reapply(); }
+                if (EditorGUI.EndChangeCheck()) { SaveSettings(); if (hides.Count > 0) Busy("Updating…", "更新中…", hides.Reapply); }
 
                 DocMeReapply.AutoEnabled = EditorGUILayout.ToggleLeft(GC("Rebuild automatically when the model is reimported", "モデルの再インポート時に自動で作り直す",
                     "Edit the FBX in Blender and reimport: the eyes and hidden parts come back on the new mesh.",
@@ -682,16 +700,42 @@ namespace DocMe.EyeInstaller
         }
 
         int HiddenCount() => hides.Count;
-        void UndoLastHide() => hides.UndoLast();
-        void ClearHides() => hides.Clear();
+        int SelectedCount() => hides.PendingCount;
+
+        /// <summary>Runs a rebuild behind a progress bar: every rebuild writes the whole mesh asset.</summary>
+        void Busy(string en, string jp, System.Action work)
+        {
+            EditorUtility.DisplayProgressBar("DocMe Eyes", L(en, jp), 0.4f);
+            try { work(); }
+            finally { EditorUtility.ClearProgressBar(); previews.Clear(); Repaint(); SceneView.RepaintAll(); }
+        }
+
+        void UndoLastHide()
+        {
+            if (hides.PendingCount > 0) hides.UndoLast();
+            else Busy("Updating…", "更新中…", hides.UndoLast);
+        }
+
+        void ClearHides() => Busy("Showing all…", "すべて表示中…", hides.Clear);
+
+        void HideSelected()
+        {
+            int n = hides.PendingCount;
+            if (n == 0) return;
+            int done = 0;
+            Busy(n == 1 ? "Hiding 1 part…" : $"Hiding {n} parts…", $"{n} 箇所を隠しています…", () => done = hides.HideSelected());
+            log = done == n ? "" : L($"{n - done} of the selected parts could not be hidden.", $"選択した {n - done} 箇所は隠せませんでした。");
+        }
 
         void AddHide(EyeSeed seed)
         {
-            switch (hides.Add(seed))
+            switch (hides.Select(seed))
             {
-                case HidePickSession.AddResult.Hidden: break;
-                case HidePickSession.AddResult.IsNewEye: log = L("That is the new eye itself, so it stays.", "それは新しい目なので隠しません。"); break;
-                default: log = L("That part is too big to hide. Click a small piece such as a highlight.", "その部分は大きすぎて隠せません。ハイライトなど小さな部分をクリックしてください。"); break;
+                case HidePickSession.SelectResult.Selected:
+                case HidePickSession.SelectResult.Deselected: log = ""; break;
+                case HidePickSession.SelectResult.IsNewEye: log = L("That is the new eye itself, so it stays.", "それは新しい目なので隠しません。"); break;
+                case HidePickSession.SelectResult.TooBig: log = L("That part is too big to hide. Click a small piece such as a highlight.", "その部分は大きすぎて隠せません。ハイライトなど小さな部分をクリックしてください。"); break;
+                default: log = L("That mesh cannot be read.", "そのメッシュは読み取れません。"); break;
             }
         }
 
@@ -999,14 +1043,33 @@ namespace DocMe.EyeInstaller
                         Handles.SphereHandleCap(0, seed.point, Quaternion.identity, HandleUtility.GetHandleSize(seed.point) * 0.05f, EventType.Repaint);
                 }
 
+            if (page == Page.Done && Event.current.type == EventType.Repaint)
+            {
+                var sel = new Color(1f, 0.35f, 0.35f);
+                foreach (var p in hides.Pending) previews.Draw(previews.Get(p.renderer, p.vertex), sel, pickMode == HideKey);
+                if (pickMode == HideKey)
+                {
+                    Handles.color = new Color(0.55f, 0.55f, 0.55f);
+                    foreach (var p in hides.Picks)
+                        Handles.SphereHandleCap(0, p.point, Quaternion.identity, HandleUtility.GetHandleSize(p.point) * 0.04f, EventType.Repaint);
+                }
+            }
+
             if (pickMode == null) return;
             sv.Repaint();
 
             Handles.BeginGUI();
-            int picked = pickMode == HideKey ? HiddenCount() : seeds.TryGetValue(pickMode, out var cur) ? cur.Count : 0;
-            GUI.Label(new Rect(8, 8, 520, 22), L(
-                $"Click the {PickName(pickMode)} ({picked} so far). Esc when done, Ctrl+Z undoes the last click.",
-                $"{PickName(pickMode)}をクリック（{picked} 個）。終わったら Esc、Ctrl+Z で最後のクリックを取り消し。"));
+            string overlay;
+            if (pickMode == HideKey)
+                overlay = L($"Click parts to select them ({SelectedCount()} selected, {HiddenCount()} hidden). Enter hides them, Esc stops, Ctrl+Z takes back the last.",
+                            $"隠す部分をクリックして選択（{SelectedCount()} 選択、{HiddenCount()} 非表示）。Enter で隠す、Esc で終了、Ctrl+Z で最後を取り消し。");
+            else
+            {
+                int picked = seeds.TryGetValue(pickMode, out var cur) ? cur.Count : 0;
+                overlay = L($"Click the {PickName(pickMode)} ({picked} so far). Esc when done, Ctrl+Z undoes the last click.",
+                            $"{PickName(pickMode)}をクリック（{picked} 個）。終わったら Esc、Ctrl+Z で最後のクリックを取り消し。");
+            }
+            GUI.Label(new Rect(8, 8, 620, 22), overlay);
             Handles.EndGUI();
 
             HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
@@ -1014,6 +1077,7 @@ namespace DocMe.EyeInstaller
             var e = Event.current;
             if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape) { pickMode = null; e.Use(); Repaint(); return; }
             if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Z && (e.control || e.command)) { RemoveLastPoint(); e.Use(); Repaint(); return; }
+            if (e.type == EventType.KeyDown && pickMode == HideKey && (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter)) { HideSelected(); e.Use(); Repaint(); return; }
 
             if (e.type == EventType.MouseDown && e.button == 0)
             {

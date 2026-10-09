@@ -4,18 +4,26 @@ using UnityEngine;
 
 namespace DocMe.EyeInstaller
 {
-    /// <summary>The click-to-hide workflow shared by the installer's Done page and the standalone
-    /// Hide Mesh Islands window: every change re-applies the whole pick list, so undo is one pick fewer.</summary>
+    /// <summary>The select-then-hide workflow shared by the installer's Done page and the standalone Hide
+    /// Mesh Islands window. A click only selects a part; Hide rebuilds the mesh once for the whole list,
+    /// because every rebuild writes the complete mesh asset.</summary>
     public class HidePickSession
     {
-        public enum AddResult { Hidden, IsNewEye, TooBig }
+        public enum SelectResult { Selected, Deselected, IsNewEye, TooBig, Missed }
 
         public GameObject avatar;
         public bool deleteGeometry;
         public bool sinkIntoHead = true;
 
         readonly List<EyeSeed> picks = new List<EyeSeed>();
+        readonly List<EyeSeed> pending = new List<EyeSeed>();
+        readonly List<HashSet<int>> pendingIslands = new List<HashSet<int>>();
+
+        /// <summary>Parts hidden on the avatar, as seeds.</summary>
         public IReadOnlyList<EyeSeed> Picks => picks;
+        /// <summary>Parts selected but not hidden yet.</summary>
+        public IReadOnlyList<EyeSeed> Pending => pending;
+        public int PendingCount => pending.Count;
 
         /// <summary>Parts hidden on the avatar right now (stored on its marker).</summary>
         public int Count
@@ -23,28 +31,66 @@ namespace DocMe.EyeInstaller
             get { var h = avatar != null ? avatar.GetComponent<DocMeIslandHide>() : null; return h != null ? h.picks.Count : 0; }
         }
 
-        public AddResult Add(EyeSeed seed)
+        /// <summary>Adds the clicked part to the selection, or takes it out again when it is already selected.</summary>
+        public SelectResult Select(EyeSeed seed)
         {
-            if (picks.Count == 0 && Count > 0) Reload();
-            picks.Add(seed);
-            bool ok = HideIslandsCore.Apply(avatar, picks, deleteGeometry, sinkIntoHead, out _, out _, out int skipped);
-            if (Count >= picks.Count) { SceneView.RepaintAll(); return AddResult.Hidden; }
-
-            picks.RemoveAt(picks.Count - 1);
-            if (!ok) Reapply();
+            switch (HideIslandsCore.Classify(avatar, seed, out var island))
+            {
+                case HideIslandsCore.PartKind.None: return SelectResult.Missed;
+                case HideIslandsCore.PartKind.TooBig: return SelectResult.TooBig;
+                case HideIslandsCore.PartKind.NewEye: return SelectResult.IsNewEye;
+            }
+            for (int i = 0; i < pending.Count; i++)
+            {
+                if (pending[i].renderer != seed.renderer || !pendingIslands[i].Contains(seed.vertex)) continue;
+                pending.RemoveAt(i); pendingIslands.RemoveAt(i);
+                SceneView.RepaintAll();
+                return SelectResult.Deselected;
+            }
+            pending.Add(seed);
+            pendingIslands.Add(new HashSet<int>(island));
             SceneView.RepaintAll();
-            return skipped > 0 ? AddResult.IsNewEye : AddResult.TooBig;
+            return SelectResult.Selected;
         }
 
+        /// <summary>Hides every selected part in one rebuild. Returns how many parts were hidden.</summary>
+        public int HideSelected()
+        {
+            if (pending.Count == 0 || avatar == null) return 0;
+            if (picks.Count == 0 && Count > 0) Reload();
+            int before = Count;
+            picks.AddRange(pending);
+            ClearSelection();
+            HideIslandsCore.Apply(avatar, picks, deleteGeometry, sinkIntoHead, out _, out _, out _);
+            if (Count < picks.Count) Reload(); // a part the rebuild could not use drops out of the list
+            SceneView.RepaintAll();
+            return Count - before;
+        }
+
+        public void ClearSelection()
+        {
+            pending.Clear(); pendingIslands.Clear();
+            SceneView.RepaintAll();
+        }
+
+        /// <summary>Takes back the last selected part, or the last hidden one when nothing is selected.</summary>
         public void UndoLast()
         {
+            if (pending.Count > 0)
+            {
+                pending.RemoveAt(pending.Count - 1); pendingIslands.RemoveAt(pendingIslands.Count - 1);
+                SceneView.RepaintAll();
+                return;
+            }
             if (picks.Count == 0) { Reload(); if (picks.Count == 0) return; }
             picks.RemoveAt(picks.Count - 1);
             Reapply();
         }
 
+        /// <summary>Shows every hidden part again and drops the selection.</summary>
         public void Clear()
         {
+            ClearSelection();
             picks.Clear();
             HideIslandsCore.Revert(avatar);
             SceneView.RepaintAll();
@@ -57,8 +103,8 @@ namespace DocMe.EyeInstaller
             SceneView.RepaintAll();
         }
 
-        /// <summary>Drop the in-memory list (the avatar changed); what is on the avatar stays.</summary>
-        public void Forget() => picks.Clear();
+        /// <summary>Drop the in-memory lists (the avatar changed); what is on the avatar stays.</summary>
+        public void Forget() { picks.Clear(); ClearSelection(); }
 
         /// <summary>Picks stored on the avatar, turned back into clickable seeds. Resolved against the mesh
         /// as it was before hiding, since the hidden pieces are gone from the current one.</summary>

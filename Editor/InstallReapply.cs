@@ -208,13 +208,33 @@ namespace DocMe.EyeInstaller
             return meshes > 0;
         }
 
+        public enum PartKind { None, Part, TooBig, NewEye }
+
+        /// <summary>What a click landed on: a part that can be hidden, the face (too big) or the installed eye.</summary>
+        public static PartKind Classify(GameObject avatar, EyeSeed seed, out List<int> island)
+        {
+            island = null;
+            if (avatar == null || seed.renderer == null || seed.renderer.sharedMesh == null || !seed.renderer.sharedMesh.isReadable) return PartKind.None;
+            island = EyeMeshHider.SelectIslandFromSeed(seed.renderer, seed.vertex, Vector3.zero, Vector3.forward, out _, out _);
+            if (island.Count == 0) return PartKind.TooBig;
+            var canvas = NewEyeVerts(avatar, seed.renderer);
+            return island.Exists(canvas.Contains) ? PartKind.NewEye : PartKind.Part;
+        }
+
+        // Vertex indices survive every rebuild, so the eye's iris submesh applies to a hidden copy of the
+        // installed mesh as well.
         static HashSet<int> NewEyeVerts(GameObject avatar, SkinnedMeshRenderer smr)
         {
             var set = new HashSet<int>();
             var eye = avatar.GetComponent<DocMeEyeInstall>();
             if (eye == null) return set;
+            var current = smr.sharedMesh;
+            var hide = avatar.GetComponent<DocMeIslandHide>();
+            if (hide != null)
+                foreach (var e in hide.entries)
+                    if (e.renderer == smr && e.modifiedMesh == current && e.originalMesh != null) current = e.originalMesh;
             foreach (var h in eye.hiddenRenderers)
-                if (h.reshaded && h.renderer == smr && h.modifiedMesh != null && smr.sharedMesh == h.modifiedMesh)
+                if (h.reshaded && h.renderer == smr && h.modifiedMesh != null && current == h.modifiedMesh)
                     set.UnionWith(h.modifiedMesh.GetTriangles(h.modifiedMesh.subMeshCount - 1));
             return set;
         }
