@@ -1,0 +1,19 @@
+{
+  "name": "DocMe Eye Installer",
+  "id": "com.docme.eye-installer.listing",
+  "url": "https://OWNER.github.io/REPO/index.json",
+  "author": {
+    "name": "DocMe",
+    "email": "docme2nd@gmail.com",
+    "url": "https://github.com/OWNER"
+  },
+  "description": "Free installer that puts a procedural eye shader onto a VRChat avatar in four steps.",
+  "infoLink": {
+    "text": "GitHub",
+    "url": "https://github.com/OWNER/REPO"
+  },
+  "bannerUrl": "banner.png",
+  "githubRepos": [
+    "OWNER/REPO"
+  ]
+}
