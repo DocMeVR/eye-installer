@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
+using DocMe.HideIslands;
 using UnityEngine;
 
 namespace DocMe.EyeInstaller
@@ -48,7 +49,7 @@ namespace DocMe.EyeInstaller
         readonly IslandPreview previews = new IslandPreview();
         bool showOriginal = false;
         string pickMode;                 // "L" / "R" / HideKey while clicking in the Scene view, else null
-        readonly Dictionary<string, List<EyeSeed>> seeds = new Dictionary<string, List<EyeSeed>>();
+        readonly Dictionary<string, List<IslandPick>> seeds = new Dictionary<string, List<IslandPick>>();
 
         List<EyeData> detected;
         string detectLog = "";
@@ -727,13 +728,13 @@ namespace DocMe.EyeInstaller
             log = done == n ? "" : L($"{n - done} of the selected parts could not be hidden.", $"選択した {n - done} 箇所は隠せませんでした。");
         }
 
-        void AddHide(EyeSeed seed)
+        void AddHide(IslandPick seed)
         {
             switch (hides.Select(seed))
             {
                 case HidePickSession.SelectResult.Selected:
                 case HidePickSession.SelectResult.Deselected: log = ""; break;
-                case HidePickSession.SelectResult.IsNewEye: log = L("That is the new eye itself, so it stays.", "それは新しい目なので隠しません。"); break;
+                case HidePickSession.SelectResult.Protected: log = L("That is the new eye itself, so it stays.", "それは新しい目なので隠しません。"); break;
                 case HidePickSession.SelectResult.TooBig: log = L("That part is too big to hide. Click a small piece such as a highlight.", "その部分は大きすぎて隠せません。ハイライトなど小さな部分をクリックしてください。"); break;
                 default: log = L("That mesh cannot be read.", "そのメッシュは読み取れません。"); break;
             }
@@ -756,7 +757,7 @@ namespace DocMe.EyeInstaller
 
             detected = EyeAvatarDetector.Detect(avatar, out detectLog);
             foreach (var d in detected)
-                if (seeds.TryGetValue(d.label, out var list) && list.Count > 0) d.seeds = new List<EyeSeed>(list);
+                if (seeds.TryGetValue(d.label, out var list) && list.Count > 0) d.seeds = new List<IslandPick>(list);
             EyeInstallerCore.Install(avatar, detected, BuildOptions());
             SaveSettings();
             showOriginal = false;
@@ -764,7 +765,7 @@ namespace DocMe.EyeInstaller
             log = DescribeInstall();
             if (keepHides != null && keepHides.Count > 0)
             {
-                log += "\n" + DocMeReapply.ReapplyHide(avatar, keepHides, keepDelete, keepSink);
+                log += "\n" + HideIslandsCore.Reapply(avatar, keepHides, keepDelete, keepSink);
                 hides.Reload();
             }
             previews.Clear();
@@ -811,7 +812,7 @@ namespace DocMe.EyeInstaller
 
                 var eyes = EyeAvatarDetector.Detect(avatar, out _);
                 foreach (var d in eyes)
-                    if (seeds.TryGetValue(d.label, out var list) && list.Count > 0) d.seeds = new List<EyeSeed>(list);
+                    if (seeds.TryGetValue(d.label, out var list) && list.Count > 0) d.seeds = new List<IslandPick>(list);
                 preview = EyeInstallerCore.Preview(avatar, eyes, BuildOptions());
             }
             finally
@@ -1083,11 +1084,11 @@ namespace DocMe.EyeInstaller
             {
                 if (MeshPickUtil.Raycast(avatar, e.mousePosition, out var r, out int vert, out Vector3 pt, out string why))
                 {
-                    var seed = new EyeSeed { renderer = r, vertex = vert, point = pt };
+                    var seed = new IslandPick { renderer = r, vertex = vert, point = pt };
                     if (pickMode == HideKey) AddHide(seed);
                     else
                     {
-                        if (!seeds.TryGetValue(pickMode, out var list)) seeds[pickMode] = list = new List<EyeSeed>();
+                        if (!seeds.TryGetValue(pickMode, out var list)) seeds[pickMode] = list = new List<IslandPick>();
                         list.Add(seed);
                     }
                 }

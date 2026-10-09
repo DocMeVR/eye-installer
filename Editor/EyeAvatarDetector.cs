@@ -1,17 +1,10 @@
 using System.Collections.Generic;
 using System.Text;
+using DocMe.HideIslands;
 using UnityEngine;
 
 namespace DocMe.EyeInstaller
 {
-    /// <summary>One clicked island reference: a vertex on a renderer to flood-fill and collapse.</summary>
-    public struct EyeSeed
-    {
-        public SkinnedMeshRenderer renderer;
-        public int vertex;
-        public Vector3 point; // world-space hit, for drawing the marker
-    }
-
     /// <summary>Everything the installer learned about one eye.</summary>
     public class EyeData
     {
@@ -31,7 +24,7 @@ namespace DocMe.EyeInstaller
         // Optional manual seeds from Scene-view clicks: each one flood-fills the island that
         // contains that vertex on that renderer (instead of guessing by footprint). Multiple
         // seeds let one eye collapse several separate islands (iris + highlight + extras).
-        public List<EyeSeed> seeds = new List<EyeSeed>();
+        public List<IslandPick> seeds = new List<IslandPick>();
 
         public bool HasIsland => renderer != null && island.Count > 0;
         public bool HasSeed => seeds != null && seeds.Count > 0;
@@ -203,7 +196,7 @@ namespace DocMe.EyeInstaller
 
             if (d.HasIsland)
             {
-                var world = EyeMeshUtil.BakeWorldVertices(d.renderer, out var baked);
+                var world = MeshBake.BakeWorldVertices(d.renderer, out var baked);
 
                 // Centre = island centroid (≈ the eye bone). Forward stays the avatar's forward;
                 // averaging a sphere's vertex normals would cancel out.
@@ -258,12 +251,12 @@ namespace DocMe.EyeInstaller
             foreach (var hit in MeshPickUtil.RaycastAll(d.renderer, ray))
             {
                 if (tried++ >= 6) break;
-                island = EyeMeshHider.SelectIslandFromSeed(d.renderer, hit.vertex, d.centerWorld, d.forwardWorld, out _, out _);
+                island = MeshIslands.SelectIslandFromSeed(d.renderer, hit.vertex, d.centerWorld, d.forwardWorld, out _, out _);
                 if (island.Count > 0) break; // nearest hit that's a small island, not face skin
             }
             if (island == null || island.Count == 0) return;
 
-            var world = EyeMeshUtil.BakeWorldVertices(d.renderer, out var baked);
+            var world = MeshBake.BakeWorldVertices(d.renderer, out var baked);
             Object.DestroyImmediate(baked);
 
             Vector3 c = Vector3.zero;

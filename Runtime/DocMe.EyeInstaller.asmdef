@@ -1,7 +1,9 @@
 {
     "name": "DocMe.EyeInstaller",
     "rootNamespace": "DocMe.EyeInstaller",
-    "references": [],
+    "references": [
+        "DocMe.HideIslands"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

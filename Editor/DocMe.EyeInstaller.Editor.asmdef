@@ -2,7 +2,9 @@
     "name": "DocMe.EyeInstaller.Editor",
     "rootNamespace": "DocMe.EyeInstaller",
     "references": [
-        "DocMe.EyeInstaller"
+        "DocMe.EyeInstaller",
+        "DocMe.HideIslands",
+        "DocMe.HideIslands.Editor"
     ],
     "includePlatforms": [
         "Editor"

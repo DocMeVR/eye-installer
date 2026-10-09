@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DocMe.HideIslands;
 using UnityEngine;
 
 namespace DocMe.EyeInstaller
@@ -34,7 +35,7 @@ namespace DocMe.EyeInstaller
             // Rest world positions (current pose), so we flatten in WORLD space against the
             // avatar's forward, then map back through each vert's bone: that way the eye is flat
             // and faces straight forward AFTER skinning (the eye bone's rest tilt won't re-tilt it).
-            var world = EyeMeshUtil.BakeWorldVertices(smr, out var baked);
+            var world = MeshBake.BakeWorldVertices(smr, out var baked);
             var bakedNormals = baked.normals;
             var bakeRot = smr.transform.rotation;
             Object.DestroyImmediate(baked);

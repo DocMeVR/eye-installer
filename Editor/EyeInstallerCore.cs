@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
+using DocMe.HideIslands;
 using UnityEngine;
 
 namespace DocMe.EyeInstaller
@@ -12,7 +13,7 @@ namespace DocMe.EyeInstaller
     /// </summary>
     public static class EyeInstallerCore
     {
-        public const string GenDir = InstallSource.GenDir;
+        public const string GenDir = SourceModel.GenDir;
         const string HideShape = "DocMe_HideEyes";
 
         public class Options
@@ -62,10 +63,10 @@ namespace DocMe.EyeInstaller
             var paths = new List<string>();
             foreach (var h in marker.hiddenRenderers)
             {
-                InstallSource.Root(avatar, h.originalMesh, out h.sourcePath, out h.sourceMeshName);
+                SourceModel.Root(avatar, h.originalMesh, out h.sourcePath, out h.sourceMeshName);
                 paths.Add(h.sourcePath);
             }
-            marker.sourceHash = InstallSource.Hash(paths);
+            marker.sourceHash = SourceModel.Hash(paths);
             EditorUtility.SetDirty(marker);
         }
 
@@ -82,7 +83,7 @@ namespace DocMe.EyeInstaller
             };
             if (o.eyeRenderers != null) r.eyeRenderers.AddRange(o.eyeRenderers);
             foreach (var d in eyes)
-                foreach (var seed in d.seeds) r.picks.Add(InstallSource.ToPick(avatar, d.label, seed));
+                foreach (var seed in d.seeds) r.picks.Add(SourceModel.ToPick(avatar, d.label, seed));
             return r;
         }
 
@@ -100,7 +101,7 @@ namespace DocMe.EyeInstaller
         static void InstallInternal(GameObject avatar, List<EyeData> eyes, Options opt)
         {
             Undo.RegisterFullObjectHierarchyUndo(avatar, "Install DocMe Eyes");
-            EnsureDir(GenDir);
+            SourceModel.EnsureGenDir();
 
             var marker = avatar.GetComponent<DocMeEyeInstall>();
             if (marker == null) marker = Undo.AddComponent<DocMeEyeInstall>(avatar);
@@ -249,7 +250,7 @@ namespace DocMe.EyeInstaller
                     {
                         var smr = seed.renderer;
                         if (smr == null || smr.sharedMesh == null || !smr.sharedMesh.isReadable) continue;
-                        var verts = EyeMeshHider.SelectIslandFromSeed(smr, seed.vertex, d.centerWorld, d.forwardWorld, out float r, out float depth);
+                        var verts = MeshIslands.SelectIslandFromSeed(smr, seed.vertex, d.centerWorld, d.forwardWorld, out float r, out float depth);
                         if (verts.Count == 0) continue;
                         Add(smr, d, verts);
                         depthSum[d] = (depthSum.TryGetValue(d, out var s) ? s : 0f) + depth * verts.Count;
@@ -270,7 +271,7 @@ namespace DocMe.EyeInstaller
                         var mesh = smr.sharedMesh;
                         if (mesh == null || !mesh.isReadable) continue;
 
-                        var verts = EyeMeshHider.SelectEyeVerts(smr, d.centerWorld, d.forwardWorld, footprint, out float irisDepth);
+                        var verts = EyeIslands.SelectEyeVerts(smr, d.centerWorld, d.forwardWorld, footprint, out float irisDepth);
                         if (verts.Count == 0) continue;
                         Add(smr, d, verts);
                         depthSum[d] = (depthSum.TryGetValue(d, out var s) ? s : 0f) + irisDepth * verts.Count;
@@ -328,7 +329,7 @@ namespace DocMe.EyeInstaller
                 var extras = new List<List<int>>();
                 foreach (var (eye, verts) in kv.Value)
                 {
-                    var islands = EyeMeshHider.SplitIslands(smr, verts);
+                    var islands = MeshIslands.SplitIslands(smr, verts);
                     if (islands.Count == 0) continue;
                     canvas.Add((eye, islands[0]));
                     canvasVerts.UnionWith(islands[0]);
@@ -346,12 +347,12 @@ namespace DocMe.EyeInstaller
                 if (extras.Count > 0 && opt.hideOriginal)
                 {
                     if (opt.deleteOriginal)
-                        EyeMeshHider.RemoveIslandTriangles(work, extras);
+                        MeshIslands.RemoveIslandTriangles(work, extras);
                     else
                     {
                         Vector3? sinkPos = null;
-                        if (opt.sinkIntoHead && EyeMeshHider.TryGetBoneBindPosition(smr, head, out var hp)) sinkPos = hp;
-                        if (EyeMeshHider.AddHideShape(work, extras, HideShape, default, 2f, sinkPos)) hideShape = HideShape;
+                        if (opt.sinkIntoHead && MeshIslands.TryGetBoneBindPosition(smr, head, out var hp)) sinkPos = hp;
+                        if (MeshIslands.AddHideShape(work, extras, HideShape, default, 2f, sinkPos)) hideShape = HideShape;
                     }
                 }
 
@@ -393,13 +394,13 @@ namespace DocMe.EyeInstaller
             bool ok;
             if (opt.deleteOriginal)
             {
-                ok = EyeMeshHider.RemoveIslandTriangles(work, islands);
+                ok = MeshIslands.RemoveIslandTriangles(work, islands);
             }
             else
             {
                 Vector3? sinkPos = null;
-                if (opt.sinkIntoHead && EyeMeshHider.TryGetBoneBindPosition(smr, head, out var hp)) sinkPos = hp;
-                ok = EyeMeshHider.AddHideShape(work, islands, HideShape, default, 2f, sinkPos);
+                if (opt.sinkIntoHead && MeshIslands.TryGetBoneBindPosition(smr, head, out var hp)) sinkPos = hp;
+                ok = MeshIslands.AddHideShape(work, islands, HideShape, default, 2f, sinkPos);
             }
             if (!ok) { Object.DestroyImmediate(work); return; }
 
@@ -511,7 +512,7 @@ namespace DocMe.EyeInstaller
             {
                 if (h.renderer != null)
                 {
-                    var restore = h.originalMesh != null ? h.originalMesh : InstallSource.Resolve(h.sourcePath, h.sourceMeshName, h.renderer.name);
+                    var restore = h.originalMesh != null ? h.originalMesh : SourceModel.Resolve(h.sourcePath, h.sourceMeshName, h.renderer.name);
                     if (restore != null) h.renderer.sharedMesh = restore;
                 }
                 if (h.renderer != null && h.originalMaterials != null)
@@ -530,12 +531,5 @@ namespace DocMe.EyeInstaller
             Debug.Log($"[DocMe Eyes] Reverted '{avatar.name}'.");
         }
 
-        static void EnsureDir(string assetDir)
-        {
-            if (AssetDatabase.IsValidFolder(assetDir)) return;
-            string abs = Path.Combine(Directory.GetCurrentDirectory(), assetDir);
-            Directory.CreateDirectory(abs);
-            AssetDatabase.Refresh();
-        }
     }
 }

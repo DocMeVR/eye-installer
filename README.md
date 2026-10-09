@@ -4,7 +4,7 @@ Puts a procedural eye shader onto a VRChat avatar in four steps. Works with the 
 
 ## Install
 
-1. Add the listing to VRChat Creator Companion: open **https://docmevr.github.io/eye-installer** and press **Add to VCC**, or add `https://docmevr.github.io/eye-installer/index.json` under Settings > Packages > Add Repository.
+1. Add the listing to VRChat Creator Companion: open **https://docmevr.github.io/vpm** and press **Add to VCC**, or add `https://docmevr.github.io/vpm/index.json` under Settings > Packages > Add Repository.
 2. In your avatar project, press **Manage Project** and add **DocMe Eye Installer**.
 
 Unity 2022.3 and VRChat SDK 3.5 or newer.
@@ -25,7 +25,7 @@ Open **Tools > DocMe > Eye Shader Installer**.
 
 ### Hiding parts
 
-Highlights or decorations from the old eye can sit on top of the new one. On the Done page press **Select parts to hide**, click them in the Scene view (they light up red; a second click unselects), then press **Hide selected parts** or Enter. Every hide rebuilds the mesh once, so select everything first. The same tool is also available on its own under **Tools > DocMe > Hide Mesh Islands** and works for any small part of a mesh.
+Highlights or decorations from the old eye can sit on top of the new one. On the Done page press **Select parts to hide**, click them in the Scene view (they light up red; a second click unselects), then press **Hide selected parts** or Enter. Every hide rebuilds the mesh once, so select everything first. The hide tool is its own package, **DocMe Hide Mesh Islands**, which VCC installs together with this one; **Tools > DocMe > Hide Mesh Islands** works for any small part of a mesh.
 
 Hidden parts are folded away by a blendshape and can be brought back at any time. If another blendshape pulls a folded part back into view, turn on *Delete hidden parts instead of folding them*.
 

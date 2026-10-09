@@ -11,6 +11,7 @@
   "license": "MIT",
   "keywords": ["vrchat", "avatar", "eyes", "shader", "docme"],
   "vpmDependencies": {
-    "com.vrchat.base": ">=3.5.0"
+    "com.vrchat.base": ">=3.5.0",
+    "com.docme.hide-islands": ">=1.0.0"
   }
 }
