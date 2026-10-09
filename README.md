@@ -4,7 +4,7 @@ Puts a procedural eye shader onto a VRChat avatar in four steps. Works with the 
 
 ## Install
 
-1. Add the listing to VRChat Creator Companion: open **https://docme.github.io/eye-installer** and press **Add to VCC**, or add `https://docme.github.io/eye-installer/index.json` under Settings > Packages > Add Repository.
+1. Add the listing to VRChat Creator Companion: open **https://docmevr.github.io/eye-installer** and press **Add to VCC**, or add `https://docmevr.github.io/eye-installer/index.json` under Settings > Packages > Add Repository.
 2. In your avatar project, press **Manage Project** and add **DocMe Eye Installer**.
 
 Unity 2022.3 and VRChat SDK 3.5 or newer.
