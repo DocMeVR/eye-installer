@@ -16,7 +16,7 @@ Open **Tools > DocMe > Eye Shader Installer**.
 1. **Avatar**: drop your avatar in, or have it selected in the Hierarchy. The tool finds the eyes on its own.
 2. **Eyes**: the found eyes are tinted in the Scene view (blue left, orange right). If a tint is wrong or missing, press *Fix* and click the iris.
 3. **Look**: pick the eye material, choose how to build the eye, set the size. The result shows on the avatar while you change settings. Press **Install eyes**.
-4. **Done**: click leftover highlights to hide them, fine tune size and position, show the original eyes for comparison, or remove everything again.
+4. **Done**: select leftover highlights and hide them in one go, fine tune size and position, show the original eyes for comparison, or remove everything again.
 
 ### Two ways to build the eye
 
@@ -25,7 +25,7 @@ Open **Tools > DocMe > Eye Shader Installer**.
 
 ### Hiding parts
 
-Highlights or decorations from the old eye can sit on top of the new one. On the Done page press **Click parts to hide** and click them in the Scene view. The same tool is also available on its own under **Tools > DocMe > Hide Mesh Islands** and works for any small part of a mesh.
+Highlights or decorations from the old eye can sit on top of the new one. On the Done page press **Select parts to hide**, click them in the Scene view (they light up red; a second click unselects), then press **Hide selected parts** or Enter. Every hide rebuilds the mesh once, so select everything first. The same tool is also available on its own under **Tools > DocMe > Hide Mesh Islands** and works for any small part of a mesh.
 
 Hidden parts are folded away by a blendshape and can be brought back at any time. If another blendshape pulls a folded part back into view, turn on *Delete hidden parts instead of folding them*.
 
