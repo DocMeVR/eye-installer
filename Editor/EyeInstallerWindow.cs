@@ -550,6 +550,9 @@ namespace DocMe.EyeInstaller
                         "Rewrites the avatar's blendshapes so they move the new eye as one flat sheet. A shape that pinches one corner would warp the parallax.",
                         "ブレンドシェイプが新しい目を平らなまま均等に動かすように書き換えます。一部だけをつまむシェイプは視差を歪めます。"),
                         evenEyeShapes, new[] { L("Off (as authored)", "オフ（元のまま）"), L("Mean fit", "平均"), L("Max extent", "最大") });
+                    if (evenEyeShapes != 0 && previewOn)
+                        GUILayout.Label(L("The preview keeps the blendshapes as authored. The evening is applied when you install.",
+                                          "プレビューではブレンドシェイプは元のままです。均等化はインストール時に適用されます。"), _hint);
                 }
                 if (EditorGUI.EndChangeCheck()) { SaveSettings(); MarkPreviewDirty(); }
                 EditorGUI.indentLevel--;
@@ -738,7 +741,7 @@ namespace DocMe.EyeInstaller
         void OnUpdate()
         {
             if (!previewDirty || page != Page.Look) return;
-            if (EditorApplication.timeSinceStartup - previewStamp < 0.35) return;
+            if (EditorApplication.timeSinceStartup - previewStamp < 0.2) return;
             previewDirty = false;
             RefreshPreview();
             Repaint();

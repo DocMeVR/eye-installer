@@ -336,8 +336,11 @@ namespace DocMe.EyeInstaller
                 }
                 extras.RemoveAll(isl => isl.Exists(canvasVerts.Contains));
 
+                // Evening rewrites every blendshape on the mesh (seconds on a face with hundreds of shapes);
+                // the preview only has to show where the eye lands.
+                int even = sink.IsPreview ? 0 : opt.evenEyeShapes;
                 var work = EyeMeshReshader.Reshade(smr, canvas, opt.flattenEye, opt.widthFactor, opt.heightFactor, opt.rollOffset,
-                    opt.depthOffset, opt.verticalOffset, opt.horizontalOffset, opt.dropBackFaces, out Material[] origMats, opt.evenEyeShapes);
+                    opt.depthOffset, opt.verticalOffset, opt.horizontalOffset, opt.dropBackFaces, out Material[] origMats, even);
 
                 string hideShape = null;
                 if (extras.Count > 0 && opt.hideOriginal)
