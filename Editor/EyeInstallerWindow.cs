@@ -35,6 +35,10 @@ namespace DocMe.EyeInstaller
         float verticalOffset = 0f;
         float horizontalOffset = 0f;
         float rollOffset = 0f;
+        float rollRightOffset = 0f;
+        int rollMode = EyeInstallerCore.RollMirror;
+        float angleOut = 0f;
+        float angleUp = 0f;
 
         readonly HidePickSession hides = new HidePickSession();
         bool advancedEyes, advancedLook, advancedDone, showDetails, showPresets;
@@ -125,6 +129,10 @@ namespace DocMe.EyeInstaller
             EditorPrefs.SetFloat(PK + "verticalOffset", verticalOffset);
             EditorPrefs.SetFloat(PK + "horizontalOffset", horizontalOffset);
             EditorPrefs.SetFloat(PK + "rollOffset", rollOffset);
+            EditorPrefs.SetFloat(PK + "rollRightOffset", rollRightOffset);
+            EditorPrefs.SetInt(PK + "rollMode", rollMode);
+            EditorPrefs.SetFloat(PK + "angleOut", angleOut);
+            EditorPrefs.SetFloat(PK + "angleUp", angleUp);
         }
 
         void LoadSettings()
@@ -149,6 +157,11 @@ namespace DocMe.EyeInstaller
             verticalOffset   = EditorPrefs.GetFloat(PK + "verticalOffset", verticalOffset);
             horizontalOffset = EditorPrefs.GetFloat(PK + "horizontalOffset", horizontalOffset);
             rollOffset       = EditorPrefs.GetFloat(PK + "rollOffset", rollOffset);
+            rollRightOffset  = EditorPrefs.GetFloat(PK + "rollRightOffset", rollRightOffset);
+            rollMode         = EditorPrefs.GetInt(PK + "rollMode", rollMode);
+            if (rollMode == EyeInstallerCore.RollSame) rollMode = EyeInstallerCore.RollMirror;
+            angleOut         = EditorPrefs.GetFloat(PK + "angleOut", angleOut);
+            angleUp          = EditorPrefs.GetFloat(PK + "angleUp", angleUp);
         }
 
         static GameObject LoadSavedAvatar()
@@ -524,7 +537,18 @@ namespace DocMe.EyeInstaller
                 depthOffset      = EditorGUILayout.Slider(GC("Depth", "前後", "Forward (+) or deeper (−), in metres.", "前へ(＋)／奥へ(−)、メートル。"), depthOffset, -0.02f, 0.02f);
                 verticalOffset   = EditorGUILayout.Slider(GC("Up / down", "上下"), verticalOffset, -0.02f, 0.02f);
                 horizontalOffset = EditorGUILayout.Slider(GC("Apart / together", "左右", "Apart (+) or toward the nose (−).", "外へ(＋)／鼻側へ(−)。"), horizontalOffset, -0.02f, 0.02f);
-                rollOffset       = EditorGUILayout.Slider(GC("Roll", "回転"), rollOffset, -180f, 180f);
+                angleOut = EditorGUILayout.Slider(GC("Angle outward", "外向きの角度",
+                    "Turns each eye toward its own outer side, in degrees. For faces whose eyes sit on the sides, so they do not thin out when seen from the side.",
+                    "それぞれの目を外側へ向けます（度）。目が顔の横寄りにあるアバターで、横から見ても細くならないように。"), angleOut, -30f, 30f);
+                angleUp = EditorGUILayout.Slider(GC("Tilt up / down", "上下の傾き", "Tilts both eyes up (+) or down (−), in degrees.", "両目を上(＋)／下(−)へ傾けます（度）。"), angleUp, -30f, 30f);
+                bool mirror = rollMode != EyeInstallerCore.RollIndependent;
+                rollOffset = EditorGUILayout.Slider(GC(mirror ? "Roll" : "Roll (left eye)", mirror ? "回転" : "回転（左目）",
+                    "Spins the eye around its view axis, in degrees.", "目を視線の軸まわりに回します（度）。"), rollOffset, -180f, 180f);
+                bool mirrorNow = EditorGUILayout.ToggleLeft(GC("Mirror the roll on the right eye", "右目は鏡写しに回す",
+                    "On: the right eye rolls the opposite way, so both eyes tilt alike. Off: the right eye gets its own roll.",
+                    "オン：右目は逆向きに回り、両目が同じ傾きになります。オフ：右目は別の値で回します。"), mirror);
+                if (mirrorNow != mirror) rollMode = mirrorNow ? EyeInstallerCore.RollMirror : EyeInstallerCore.RollIndependent;
+                if (!mirrorNow) rollRightOffset = EditorGUILayout.Slider(GC("Roll (right eye)", "回転（右目）"), rollRightOffset, -180f, 180f);
                 EditorGUILayout.Space(4);
 
                 if (!deformWithFace)
@@ -854,6 +878,10 @@ namespace DocMe.EyeInstaller
             verticalOffset = verticalOffset,
             horizontalOffset = horizontalOffset,
             rollOffset = rollOffset,
+            rollRightOffset = rollRightOffset,
+            rollMode = rollMode,
+            angleOut = angleOut,
+            angleUp = angleUp,
             eyeRenderers = eyeRenderer != null ? new List<SkinnedMeshRenderer> { eyeRenderer } : null,
         };
 
@@ -948,6 +976,8 @@ namespace DocMe.EyeInstaller
             marker.recipe.widthFactor = widthFactor; marker.recipe.heightFactor = heightFactor;
             marker.recipe.depthOffset = depthOffset; marker.recipe.verticalOffset = verticalOffset;
             marker.recipe.horizontalOffset = horizontalOffset;
+            marker.recipe.rollOffset = rollOffset; marker.recipe.rollRightOffset = rollRightOffset; marker.recipe.rollMode = rollMode;
+            marker.recipe.angleOut = angleOut; marker.recipe.angleUp = angleUp;
 
             foreach (var c in marker.createdEyes)
             {
@@ -982,6 +1012,8 @@ namespace DocMe.EyeInstaller
             widthFactor = p.widthFactor; heightFactor = p.heightFactor;
             depthOffset = p.depthOffset; verticalOffset = p.verticalOffset;
             horizontalOffset = p.horizontalOffset; rollOffset = p.rollOffset;
+            rollRightOffset = p.rollRightOffset; angleOut = p.angleOut; angleUp = p.angleUp;
+            rollMode = p.rollMode == EyeInstallerCore.RollIndependent ? EyeInstallerCore.RollIndependent : EyeInstallerCore.RollMirror;
             SaveSettings();
             MarkPreviewDirty();
             log = L($"Loaded preset '{p.name}'.", $"プリセット「{p.name}」を読み込みました。");
@@ -996,6 +1028,7 @@ namespace DocMe.EyeInstaller
             p.widthFactor = widthFactor; p.heightFactor = heightFactor;
             p.depthOffset = depthOffset; p.verticalOffset = verticalOffset;
             p.horizontalOffset = horizontalOffset; p.rollOffset = rollOffset;
+            p.rollRightOffset = rollRightOffset; p.rollMode = rollMode; p.angleOut = angleOut; p.angleUp = angleUp;
             EditorUtility.SetDirty(p);
             AssetDatabase.SaveAssets();
             log = L($"Saved preset '{p.name}'.", $"プリセット「{p.name}」を保存しました。");

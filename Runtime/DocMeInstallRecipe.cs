@@ -14,6 +14,8 @@ namespace DocMe.EyeInstaller
         public bool dropBackFaces = true, sinkIntoHead = true, deleteOriginal;
         public float widthFactor = 1.3f, heightFactor = 1.3f, footprintScale = 0.95f;
         public float depthOffset, verticalOffset, horizontalOffset, rollOffset;
+        public float rollRightOffset, angleOut, angleUp;
+        public int rollMode;   // 0 = both eyes roll the same way (older installs), 1 = mirrored, 2 = independent
         public int evenEyeShapes;
         public List<SkinnedMeshRenderer> eyeRenderers = new List<SkinnedMeshRenderer>();
         public List<DocMePick> picks = new List<DocMePick>();

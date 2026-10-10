@@ -16,10 +16,11 @@ namespace DocMe.EyeInstaller
         /// UVs + tangents, optionally flattened (forward-facing) and scaled. The caller appends the
         /// procedural material to that submesh.</summary>
         public static Mesh Reshade(SkinnedMeshRenderer smr, List<(EyeData eye, List<int> verts)> selections,
-                                   bool flatten, float widthFactor, float heightFactor, float rollDeg,
-                                   float depthOffset, float verticalOffset, float horizontalOffset,
-                                   bool dropBackFaces, out Material[] originalMaterials, int evenShapes = 0)
+                                   EyeInstallerCore.Options opt, int evenShapes, out Material[] originalMaterials)
         {
+            bool flatten = opt.flattenEye, dropBackFaces = opt.dropBackFaces;
+            float widthFactor = opt.widthFactor, heightFactor = opt.heightFactor;
+            float depthOffset = opt.depthOffset, verticalOffset = opt.verticalOffset, horizontalOffset = opt.horizontalOffset;
             originalMaterials = smr.sharedMaterials;
             var src = smr.sharedMesh;
             var work = Object.Instantiate(src);
@@ -104,16 +105,8 @@ namespace DocMe.EyeInstaller
             {
                 if (vlist.Count == 0) continue;
 
-                // World frame: the avatar's forward is the view axis; up is world-up.
-                Vector3 fwd = eye.forwardWorld.normalized;
-                Vector3 up = Vector3.ProjectOnPlane(Vector3.up, fwd).normalized;
-                if (up.sqrMagnitude < 1e-4f) up = Vector3.up;
-                Vector3 right = Vector3.Cross(up, fwd).normalized;
-                if (Mathf.Abs(rollDeg) > 1e-4f)
-                {
-                    Quaternion q = Quaternion.AngleAxis(rollDeg, fwd);
-                    right = q * right; up = q * up;
-                }
+                // World frame: the avatar's forward turned by the angle settings is the view axis.
+                EyeInstallerCore.EyeFrame(eye, opt, out Vector3 fwd, out Vector3 up, out Vector3 right);
 
                 Vector3 cen = Vector3.zero;
                 foreach (int i in vlist) cen += world[i];

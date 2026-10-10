@@ -192,7 +192,8 @@ namespace DocMe.EyeInstaller
             // Up = world up, made orthogonal to forward.
             d.upWorld = Vector3.ProjectOnPlane(Vector3.up, d.forwardWorld).normalized;
             if (d.upWorld.sqrMagnitude < 1e-4f) d.upWorld = Vector3.up;
-            d.outwardWorld = avatar.transform.right; // refined (with correct side) in SymmetrizeCenters
+            float side = avatar.transform.InverseTransformPoint(d.bone.position).x < 0f ? -1f : 1f;
+            d.outwardWorld = avatar.transform.right * side; // refined in SymmetrizeCenters when both eyes are found
 
             if (d.HasIsland)
             {

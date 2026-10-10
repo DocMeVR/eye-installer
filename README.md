@@ -27,6 +27,10 @@ Open **Tools > DocMe > Eye Shader Installer**.
 
 Highlights or decorations from the old eye can sit on top of the new one. On the Done page press **Select parts to hide**, click them in the Scene view (they light up red; a second click unselects), then press **Hide selected parts** or Enter. Every hide rebuilds the mesh once, so select everything first. The hide tool is its own package, **DocMe Hide Mesh Islands**, which VCC installs together with this one; **Tools > DocMe > Hide Mesh Islands** works for any small part of a mesh.
 
+## Angled eyes
+
+Under *Advanced* on the Look page, **Angle outward** turns each eye toward its own outer side and **Tilt up / down** tilts both. The right eye always mirrors the left. Use it on faces whose eyes sit on the sides, where a straight flat eye thins to a sliver when seen from the side. The parallax keeps working at any angle: the shader works in the eye surface's own tangent space, and the installer builds the tilted eye with its normals and tangents aligned to the tilted plane. **Roll** spins the eye around its view axis; it is mirrored on the right eye unless you turn the mirror off and give the right eye its own value.
+
 Hidden parts are folded away by a blendshape and can be brought back at any time. If another blendshape pulls a folded part back into view, turn on *Delete hidden parts instead of folding them*.
 
 ### Blender round trip

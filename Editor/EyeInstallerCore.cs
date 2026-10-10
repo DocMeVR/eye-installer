@@ -14,6 +14,7 @@ namespace DocMe.EyeInstaller
     public static class EyeInstallerCore
     {
         public const string GenDir = SourceModel.GenDir;
+        public const int RollSame = 0, RollMirror = 1, RollIndependent = 2;
         const string HideShape = "DocMe_HideEyes";
 
         public class Options
@@ -35,7 +36,11 @@ namespace DocMe.EyeInstaller
             public float depthOffset = 0f;     // extra forward nudge (metres)
             public float verticalOffset = 0f;
             public float horizontalOffset = 0f; // apart (+) / toward face centre (−), metres
-            public float rollOffset = 0f;      // spin the eye around its view axis (degrees): align a custom mesh
+            public float rollOffset = 0f;      // roll of the left eye around its view axis (degrees)
+            public float rollRightOffset = 0f; // roll of the right eye when rollMode is RollIndependent
+            public int rollMode = RollMirror;  // RollSame: both the same way (older installs), RollMirror, RollIndependent
+            public float angleOut = 0f;        // turn each eye toward its own outer side (degrees)
+            public float angleUp = 0f;         // tilt both eyes up (+) or down (-) (degrees)
             // Which mesh the eyes live in. Null = auto (every active body mesh). Set this to pin
             // the hide to a specific renderer when auto picks the wrong / too many meshes.
             public List<SkinnedMeshRenderer> eyeRenderers;
@@ -80,6 +85,7 @@ namespace DocMe.EyeInstaller
                 deleteOriginal = o.deleteOriginal, widthFactor = o.widthFactor, heightFactor = o.heightFactor,
                 footprintScale = o.footprintScale, depthOffset = o.depthOffset, verticalOffset = o.verticalOffset,
                 horizontalOffset = o.horizontalOffset, rollOffset = o.rollOffset, evenEyeShapes = o.evenEyeShapes,
+                rollRightOffset = o.rollRightOffset, rollMode = o.rollMode, angleOut = o.angleOut, angleUp = o.angleUp,
             };
             if (o.eyeRenderers != null) r.eyeRenderers.AddRange(o.eyeRenderers);
             foreach (var d in eyes)
@@ -95,6 +101,7 @@ namespace DocMe.EyeInstaller
             deleteOriginal = r.deleteOriginal, widthFactor = r.widthFactor, heightFactor = r.heightFactor,
             footprintScale = r.footprintScale, depthOffset = r.depthOffset, verticalOffset = r.verticalOffset,
             horizontalOffset = r.horizontalOffset, rollOffset = r.rollOffset, evenEyeShapes = r.evenEyeShapes,
+            rollRightOffset = r.rollRightOffset, rollMode = r.rollMode, angleOut = r.angleOut, angleUp = r.angleUp,
             eyeRenderers = r.eyeRenderers != null && r.eyeRenderers.Count > 0 ? new List<SkinnedMeshRenderer>(r.eyeRenderers) : null,
         };
 
@@ -340,8 +347,7 @@ namespace DocMe.EyeInstaller
                 // Evening rewrites every blendshape on the mesh (seconds on a face with hundreds of shapes);
                 // the preview only has to show where the eye lands.
                 int even = sink.IsPreview ? 0 : opt.evenEyeShapes;
-                var work = EyeMeshReshader.Reshade(smr, canvas, opt.flattenEye, opt.widthFactor, opt.heightFactor, opt.rollOffset,
-                    opt.depthOffset, opt.verticalOffset, opt.horizontalOffset, opt.dropBackFaces, out Material[] origMats, even);
+                var work = EyeMeshReshader.Reshade(smr, canvas, opt, even, out Material[] origMats);
 
                 string hideShape = null;
                 if (extras.Count > 0 && opt.hideOriginal)
@@ -452,10 +458,10 @@ namespace DocMe.EyeInstaller
             int flat = (bs.x <= bs.y && bs.x <= bs.z) ? 0 : (bs.y <= bs.x && bs.y <= bs.z) ? 1 : 2;
             Vector3 meshNormalLocal = flat == 0 ? Vector3.right : flat == 1 ? Vector3.up : Vector3.forward;
 
-            // Aim the flat axis along the outward view direction; roll to align "up".
+            // Aim the flat axis along the eye's view direction, angle and roll included.
+            EyeFrame(d, opt, out Vector3 fwd, out Vector3 up, out _);
             Quaternion align = Quaternion.FromToRotation(meshNormalLocal, Vector3.forward);
-            Quaternion lookOut = Quaternion.LookRotation(d.forwardWorld, d.upWorld);
-            t.rotation = lookOut * Quaternion.AngleAxis(opt.rollOffset, Vector3.forward) * align;
+            t.rotation = Quaternion.LookRotation(fwd, up) * align;
 
             t.position = d.centerWorld
                        + d.forwardWorld * (depth + opt.depthOffset)
@@ -466,8 +472,8 @@ namespace DocMe.EyeInstaller
             // (after orientation) carries height, the other width: so the sliders always mean the
             // same thing regardless of how the mesh was authored.
             int a1 = (flat + 1) % 3, a2 = (flat + 2) % 3;
-            float vert1 = Mathf.Abs(Vector3.Dot(t.rotation * Axis(a1), d.upWorld));
-            float vert2 = Mathf.Abs(Vector3.Dot(t.rotation * Axis(a2), d.upWorld));
+            float vert1 = Mathf.Abs(Vector3.Dot(t.rotation * Axis(a1), up));
+            float vert2 = Mathf.Abs(Vector3.Dot(t.rotation * Axis(a2), up));
             int hAxis = vert1 >= vert2 ? a1 : a2;  // height
             int wAxis = vert1 >= vert2 ? a2 : a1;  // width
 
@@ -483,6 +489,51 @@ namespace DocMe.EyeInstaller
         }
 
         static Vector3 Axis(int i) => i == 0 ? Vector3.right : i == 1 ? Vector3.up : Vector3.forward;
+
+        /// <summary>The eye's view axis and in-plane axes after the angle and roll settings. Each eye turns toward
+        /// its own outer side, so the pair stays mirror symmetric; in mirror mode the right eye rolls the other
+        /// way. Both build modes place the eye in this frame, and the parallax shader works in the surface's own
+        /// tangent space, so an angled eye behaves exactly like a straight one.</summary>
+        public static void EyeFrame(EyeData d, Options opt, out Vector3 fwd, out Vector3 up, out Vector3 right)
+        {
+            fwd = d.forwardWorld.normalized;
+            Vector3 upRef = Vector3.ProjectOnPlane(Vector3.up, fwd).normalized;
+            if (upRef.sqrMagnitude < 1e-4f) upRef = Vector3.up;
+            Vector3 outward = Vector3.ProjectOnPlane(d.outwardWorld, fwd).normalized;
+            if (outward.sqrMagnitude < 1e-4f) outward = Vector3.Cross(upRef, fwd).normalized;
+
+            if (Mathf.Abs(opt.angleOut) > 1e-4f)
+            {
+                float a = opt.angleOut * Mathf.Deg2Rad;
+                fwd = (fwd * Mathf.Cos(a) + outward * Mathf.Sin(a)).normalized;
+            }
+            if (Mathf.Abs(opt.angleUp) > 1e-4f)
+            {
+                float b = opt.angleUp * Mathf.Deg2Rad;
+                fwd = (fwd * Mathf.Cos(b) + upRef * Mathf.Sin(b)).normalized;
+            }
+            up = Vector3.ProjectOnPlane(Vector3.up, fwd).normalized;
+            if (up.sqrMagnitude < 1e-4f) up = upRef;
+            right = Vector3.Cross(up, fwd).normalized;
+
+            float roll = RollFor(d, opt);
+            if (Mathf.Abs(roll) > 1e-4f)
+            {
+                var q = Quaternion.AngleAxis(roll, fwd);
+                right = q * right; up = q * up;
+            }
+        }
+
+        public static float RollFor(EyeData d, Options opt)
+        {
+            if (d.label != "R") return opt.rollOffset;
+            switch (opt.rollMode)
+            {
+                case RollMirror: return -opt.rollOffset;
+                case RollIndependent: return opt.rollRightOffset;
+                default: return opt.rollOffset;
+            }
+        }
 
 
         public static void Revert(GameObject avatar)

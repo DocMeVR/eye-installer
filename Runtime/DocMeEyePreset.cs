@@ -22,5 +22,9 @@ namespace DocMe.EyeInstaller
         public float verticalOffset = 0f;
         public float horizontalOffset = 0f;
         public float rollOffset = 0f;
+        public float rollRightOffset = 0f;
+        public int rollMode = 1;   // 1 = mirrored, 2 = independent
+        public float angleOut = 0f;
+        public float angleUp = 0f;
     }
 }
