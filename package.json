@@ -9,6 +9,8 @@
     "email": "docme2nd@gmail.com"
   },
   "license": "MIT",
+  "documentationUrl": "https://github.com/DocMeVR/eye-installer#readme",
+  "changelogUrl": "https://github.com/DocMeVR/eye-installer/blob/main/CHANGELOG.md",
   "keywords": [
     "vrchat",
     "avatar",
