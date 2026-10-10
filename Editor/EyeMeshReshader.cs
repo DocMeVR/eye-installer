@@ -32,6 +32,9 @@ namespace DocMe.EyeInstaller
             var uvs = new List<Vector2>();
             work.GetUVs(0, uvs);
             if (uvs.Count != verts.Length) { uvs = new List<Vector2>(verts.Length); for (int i = 0; i < verts.Length; i++) uvs.Add(Vector2.zero); }
+            var uv3 = new List<Vector2>();   // gaze bias channel, see EyeInstallerCore.WriteGazeBias
+            work.GetUVs(3, uv3);
+            if (uv3.Count != verts.Length) { uv3 = new List<Vector2>(verts.Length); for (int i = 0; i < verts.Length; i++) uv3.Add(Vector2.zero); }
 
             // Rest world positions (current pose), so we flatten in WORLD space against the
             // avatar's forward, then map back through each vert's bone: that way the eye is flat
@@ -107,6 +110,7 @@ namespace DocMe.EyeInstaller
 
                 // World frame: the avatar's forward turned by the angle settings is the view axis.
                 EyeInstallerCore.EyeFrame(eye, opt, out Vector3 fwd, out Vector3 up, out Vector3 right);
+                Vector2 gaze = EyeInstallerCore.GazeBias(eye.forwardWorld.normalized, right, up, fwd);   // ComputeTangents gives T = right, B = up
 
                 Vector3 cen = Vector3.zero;
                 foreach (int i in vlist) cen += world[i];
@@ -149,6 +153,7 @@ namespace DocMe.EyeInstaller
                         if (flatten && i < normals.Length) normals[i] = smr.transform.InverseTransformDirection(fwd).normalized;
                     }
                     irisSetBuild.Add(i);
+                    uv3[i] = gaze;
                     group.rest[i] = flatWorld;
                     group.skin[i] = SkinMat(i);
                 }
@@ -158,6 +163,7 @@ namespace DocMe.EyeInstaller
             if (evenShapes > 0) EvenOutBlendShapes(work, groups, evenShapes == 2);
             if (normals.Length == verts.Length) work.normals = normals;
             work.SetUVs(0, uvs);
+            work.SetUVs(3, uv3);
 
             bool hasBakedNormals = bakedNormals != null && bakedNormals.Length == world.Length;
             bool FacesAway(int a, int b, int c)

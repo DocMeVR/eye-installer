@@ -137,7 +137,7 @@ namespace DocMe.EyeInstaller
         {
             public readonly List<DocMeEyeInstall.HiddenRenderer> hidden = new List<DocMeEyeInstall.HiddenRenderer>();
             public readonly List<GameObject> eyes = new List<GameObject>();
-            public Mesh quad;
+            public readonly List<Mesh> meshes = new List<Mesh>();
             public bool IsEmpty => hidden.Count == 0 && eyes.Count == 0;
 
             public void Restore()
@@ -157,8 +157,8 @@ namespace DocMe.EyeInstaller
                     if (h.modifiedMesh != null) Object.DestroyImmediate(h.modifiedMesh);
                 }
                 foreach (var go in eyes) if (go != null) Object.DestroyImmediate(go);
-                if (quad != null) Object.DestroyImmediate(quad);
-                hidden.Clear(); eyes.Clear(); quad = null;
+                foreach (var m in meshes) if (m != null) Object.DestroyImmediate(m);
+                hidden.Clear(); eyes.Clear(); meshes.Clear();
             }
         }
 
@@ -211,17 +211,15 @@ namespace DocMe.EyeInstaller
             // Remember the (unified) eye radius so Update Fit re-fits to the same size.
             if (eyes.Count > 0) sink.EyeRadius(eyes[0].radiusWorld);
 
-            Mesh placed = opt.eyeMesh;
-            if (placed == null)
-            {
-                placed = EyeQuadFactory.Create();
-                sink.Commit(placed);
-                if (sink.IsPreview) sink.preview.quad = placed;
-            }
-
+            // One mesh per eye, since each carries its own gaze bias. A custom mesh is copied, never edited.
             foreach (var d in eyes)
             {
                 if (d.bone == null) continue;
+                var placed = opt.eyeMesh != null ? Object.Instantiate(opt.eyeMesh) : EyeQuadFactory.Create();
+                placed.name = (opt.eyeMesh != null ? opt.eyeMesh.name : "DocMe_EyeQuad") + "_" + d.label;
+                WriteGazeBias(placed, d, opt);
+                sink.Commit(placed);
+                if (sink.IsPreview) sink.preview.meshes.Add(placed);
                 CreateEyeObject(d, placed, opt, sink, placeDepth[d]);
             }
         }
@@ -455,13 +453,12 @@ namespace DocMe.EyeInstaller
             var mf = t.GetComponent<MeshFilter>();
             if (mf != null && mf.sharedMesh != null) bs = mf.sharedMesh.bounds.size;
 
-            int flat = (bs.x <= bs.y && bs.x <= bs.z) ? 0 : (bs.y <= bs.x && bs.y <= bs.z) ? 1 : 2;
-            Vector3 meshNormalLocal = flat == 0 ? Vector3.right : flat == 1 ? Vector3.up : Vector3.forward;
+            int flat = FlatAxis(bs);
+            Vector3 meshNormalLocal = Axis(flat);
 
             // Aim the flat axis along the eye's view direction, angle and roll included.
             EyeFrame(d, opt, out Vector3 fwd, out Vector3 up, out _);
-            Quaternion align = Quaternion.FromToRotation(meshNormalLocal, Vector3.forward);
-            t.rotation = Quaternion.LookRotation(fwd, up) * align;
+            t.rotation = FitRotation(meshNormalLocal, fwd, up);
 
             t.position = d.centerWorld
                        + d.forwardWorld * (depth + opt.depthOffset)
@@ -489,6 +486,58 @@ namespace DocMe.EyeInstaller
         }
 
         static Vector3 Axis(int i) => i == 0 ? Vector3.right : i == 1 ? Vector3.up : Vector3.forward;
+
+        // The mesh's thinnest axis is its view axis: a quad is flat in Z, a custom eye mesh in whatever it was built with.
+        static int FlatAxis(Vector3 bs) => (bs.x <= bs.y && bs.x <= bs.z) ? 0 : (bs.y <= bs.x && bs.y <= bs.z) ? 1 : 2;
+        static Quaternion FitRotation(Vector3 meshNormalLocal, Vector3 fwd, Vector3 up)
+            => Quaternion.LookRotation(fwd, up) * Quaternion.FromToRotation(meshNormalLocal, Vector3.forward);
+
+        /// <summary>Stores, per vertex in UV3, where the avatar's forward axis points in the eye surface's tangent
+        /// space, the way the parallax shaders measure view directions (xy over z). The shader subtracts it, so an
+        /// eye the installer turned outward still looks straight ahead and its parallax is measured from the avatar's
+        /// forward. Zero when the eye is not angled.</summary>
+        public static void WriteGazeBias(Mesh mesh, EyeData d, Options opt)
+        {
+            if (mesh == null) return;
+            int n = mesh.vertexCount;
+            var normals = mesh.normals;
+            var tangents = mesh.tangents;
+            bool hasN = normals != null && normals.Length == n, hasT = tangents != null && tangents.Length == n;
+            Vector3 meshNormalLocal = Axis(FlatAxis(mesh.bounds.size));
+            EyeFrame(d, opt, out Vector3 fwd, out Vector3 up, out _);
+            Vector3 fLocal = Quaternion.Inverse(FitRotation(meshNormalLocal, fwd, up)) * d.forwardWorld.normalized;
+
+            var uv3 = new List<Vector2>(n);
+            for (int i = 0; i < n; i++)
+            {
+                Vector3 N = (hasN ? normals[i] : meshNormalLocal).normalized;
+                Vector4 t4 = hasT ? tangents[i] : new Vector4(1f, 0f, 0f, -1f);
+                Vector3 T = new Vector3(t4.x, t4.y, t4.z);
+                if (T.sqrMagnitude < 1e-8f) T = Vector3.Cross(N, Vector3.up);
+                if (T.sqrMagnitude < 1e-8f) T = Vector3.right;
+                T.Normalize();
+                Vector3 B = (Vector3.Cross(N, T) * (t4.w < 0f ? -1f : 1f)).normalized;   // the shaders' bitangent
+                uv3.Add(GazeBias(fLocal, T, B, N));
+            }
+            mesh.SetUVs(3, uv3);
+        }
+
+        /// <summary>Tangent-space direction (xy over z) of the axis <paramref name="f"/> in the frame T, B, N.</summary>
+        public static Vector2 GazeBias(Vector3 f, Vector3 T, Vector3 B, Vector3 N)
+        {
+            float z = Vector3.Dot(f, N);
+            if (Mathf.Abs(z) < 0.2f) z = z < 0f ? -0.2f : 0.2f;   // nothing sensible past about 80 degrees
+            return new Vector2(Vector3.Dot(f, T) / z, Vector3.Dot(f, B) / z);
+        }
+
+        /// <summary>Rewrites the gaze bias on a placed eye after its angle changed.</summary>
+        public static void RefreshGazeBias(GameObject eye, EyeData d, Options opt)
+        {
+            var mf = eye != null ? eye.GetComponent<MeshFilter>() : null;
+            if (mf == null || mf.sharedMesh == null || !SourceModel.IsGenerated(AssetDatabase.GetAssetPath(mf.sharedMesh))) return;
+            WriteGazeBias(mf.sharedMesh, d, opt);
+            EditorUtility.SetDirty(mf.sharedMesh);
+        }
 
         /// <summary>The eye's view axis and in-plane axes after the angle and roll settings. Each eye turns toward
         /// its own outer side, so the pair stays mirror symmetric; in mirror mode the right eye rolls the other

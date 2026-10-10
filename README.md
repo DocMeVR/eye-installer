@@ -29,7 +29,7 @@ Highlights or decorations from the old eye can sit on top of the new one. On the
 
 ## Angled eyes
 
-Under *Advanced* on the Look page, **Angle outward** turns each eye toward its own outer side and **Tilt up / down** tilts both. The right eye always mirrors the left. Use it on faces whose eyes sit on the sides, where a straight flat eye thins to a sliver when seen from the side. The parallax keeps working at any angle: the shader works in the eye surface's own tangent space, and the installer builds the tilted eye with its normals and tangents aligned to the tilted plane. **Roll** spins the eye around its view axis; it is mirrored on the right eye unless you turn the mirror off and give the right eye its own value.
+Under *Advanced* on the Look page, **Angle outward** turns each eye toward its own outer side and **Tilt up / down** tilts both. The right eye always mirrors the left. Use it on faces whose eyes sit on the sides, where a straight flat eye thins to a sliver when seen from the side. The parallax keeps working at any angle: the shader works in the eye surface's own tangent space, and the installer builds the tilted eye with its normals and tangents aligned to the tilted plane. The installer also stores a gaze bias in the mesh (UV3) that the DocMe eye shaders read, so an angled eye still looks straight ahead from the front instead of past the viewer; other eye shaders ignore it. **Roll** spins the eye around its view axis; it is mirrored on the right eye unless you turn the mirror off and give the right eye its own value.
 
 Hidden parts are folded away by a blendshape and can be brought back at any time. If another blendshape pulls a folded part back into view, turn on *Delete hidden parts instead of folding them*.
 

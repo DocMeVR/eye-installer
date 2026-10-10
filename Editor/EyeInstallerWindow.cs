@@ -983,7 +983,7 @@ namespace DocMe.EyeInstaller
             {
                 if (c.go == null) continue;
                 var d = fresh.Find(e => e.label == c.label);
-                if (d != null) EyeInstallerCore.ApplyFit(c.go.transform, d, opt, c.depth);
+                if (d != null) { EyeInstallerCore.ApplyFit(c.go.transform, d, opt, c.depth); EyeInstallerCore.RefreshGazeBias(c.go, d, opt); }
             }
             EditorUtility.SetDirty(avatar);
         }
