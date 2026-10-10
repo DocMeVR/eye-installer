@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/DocMeVR/eye-installer/compare/1.2.0...1.3.0) (2026-10-10)
+
+
+### Features
+
+* **look:** store a gaze bias so an angled eye still looks straight ahead ([1f41a82](https://github.com/DocMeVR/eye-installer/commit/1f41a82ec79069341169ee17c46d7523f2bb5397))
+
 ## [1.2.0](https://github.com/DocMeVR/eye-installer/compare/1.1.0...1.2.0) (2026-10-10)
 
 
