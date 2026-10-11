@@ -27,6 +27,10 @@ Open **Tools > DocMe > Eye Shader Installer**.
 
 Highlights or decorations from the old eye can sit on top of the new one. On the Done page press **Select parts to hide**, click them in the Scene view (they light up red; a second click unselects), then press **Hide selected parts** or Enter. Every hide rebuilds the mesh once, so select everything first. The hide tool is its own package, **DocMe Hide Mesh Islands**, which VCC installs together with this one; **Tools > DocMe > Hide Mesh Islands** works for any small part of a mesh.
 
+## Blendshapes on a reused eye
+
+In *Reuse the avatar's own eye* mode the eye is drawn on the original iris vertices, so a widen or dilate blendshape that moves some of them stretches the drawn eye and bends its parallax. *Blendshapes and the eye* under Advanced on the Look page decides what happens: **As authored** keeps the shapes as they are, **Scale evenly** rewrites every shape so it moves and scales the whole eye as one flat sheet, and **Move only** rewrites them so the eye moves but never changes size. For pupil dilation use the shader's own pupil slider (it can be animated) rather than a mesh shape. The rewrite happens on Install; the Scene view preview shows the shapes as authored.
+
 ## Angled eyes
 
 Under *Advanced* on the Look page, **Angle outward** turns each eye toward its own outer side and **Tilt up / down** tilts both. The right eye always mirrors the left. Use it on faces whose eyes sit on the sides, where a straight flat eye thins to a sliver when seen from the side. The parallax keeps working at any angle: the shader works in the eye surface's own tangent space, and the installer builds the tilted eye with its normals and tangents aligned to the tilted plane. The installer also stores a gaze bias in the mesh (UV3) that the DocMe eye shaders read, so an angled eye still looks straight ahead from the front instead of past the viewer; other eye shaders ignore it. **Roll** spins the eye around its view axis; it is mirrored on the right eye unless you turn the mirror off and give the right eye its own value.

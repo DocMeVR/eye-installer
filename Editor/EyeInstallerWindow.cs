@@ -573,10 +573,10 @@ namespace DocMe.EyeInstaller
                     using (new EditorGUI.DisabledScope(!flattenEye))
                         dropBackFaces = EditorGUILayout.ToggleLeft(GC("Remove the back half of a round eye", "丸い目の裏半分を削除",
                             "A ball-shaped eye would fold onto itself when flattened. Turn off if the eye is already flat.", "球状の目は平らにすると重なります。元から平らな目ならオフにしてください。"), dropBackFaces);
-                    evenEyeShapes = EditorGUILayout.Popup(GC("Blendshapes scale the eye evenly", "ブレンドシェイプで目を均等に変形",
-                        "Rewrites the avatar's blendshapes so they move the new eye as one flat sheet. A shape that pinches one corner would warp the parallax.",
-                        "ブレンドシェイプが新しい目を平らなまま均等に動かすように書き換えます。一部だけをつまむシェイプは視差を歪めます。"),
-                        evenEyeShapes, new[] { L("Off (as authored)", "オフ（元のまま）"), L("Mean fit", "平均"), L("Max extent", "最大") });
+                    evenEyeShapes = EditorGUILayout.Popup(GC("Blendshapes and the eye", "ブレンドシェイプと目",
+                        "Rewrites the avatar's blendshapes on the new eye. As authored: the eye stretches with the vertices. Scale evenly: the shape moves and scales the whole eye as one flat sheet. Move only: the shape moves the eye but never changes its size; use the shader's pupil slider for dilation.",
+                        "新しい目に対するブレンドシェイプの扱い。元のまま：頂点と一緒に目が伸びます。均等に拡大：目全体を平らなまま動かして拡大します。移動のみ：目は動くだけで大きさは変わりません。瞳孔の拡大はシェーダーのスライダーで。"),
+                        evenEyeShapes, new[] { L("As authored (can stretch)", "元のまま（伸びることあり）"), L("Scale evenly (mean fit)", "均等に拡大（平均）"), L("Scale evenly (max extent)", "均等に拡大（最大）"), L("Move only (never scale)", "移動のみ（拡大しない）") });
                     if (evenEyeShapes != 0 && previewOn)
                         GUILayout.Label(L("The preview keeps the blendshapes as authored. The evening is applied when you install.",
                                           "プレビューではブレンドシェイプは元のままです。均等化はインストール時に適用されます。"), _hint);

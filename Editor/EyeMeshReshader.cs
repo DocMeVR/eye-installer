@@ -160,7 +160,7 @@ namespace DocMe.EyeInstaller
             }
 
             work.vertices = verts;
-            if (evenShapes > 0) EvenOutBlendShapes(work, groups, evenShapes == 2);
+            if (evenShapes > 0) EvenOutBlendShapes(work, groups, evenShapes);
             if (normals.Length == verts.Length) work.normals = normals;
             work.SetUVs(0, uvs);
             work.SetUVs(3, uv3);
@@ -223,10 +223,11 @@ namespace DocMe.EyeInstaller
         /// horizontal and a vertical scale about the eye centre, fitted to what the shape did to the
         /// original verts. A shape that only pinched a corner would otherwise warp the flat iris,
         /// and the parallax reads that warp as the eye bending.
-        ///   useMax  scale = ratio of the widest extent (a partial pinch counts in full), else a
-        ///           least-squares fit over all iris verts (a partial pinch is averaged down).
+        ///   mode 1  scale = least-squares fit over the moved verts (a partial pinch is averaged down)
+        ///   mode 2  scale = ratio of the widest extent (a partial pinch counts in full)
+        ///   mode 3  no scale at all: the shape only moves the eye; the drawn eye never changes size
         /// </summary>
-        static void EvenOutBlendShapes(Mesh work, List<EyeGroup> groups, bool useMax)
+        static void EvenOutBlendShapes(Mesh work, List<EyeGroup> groups, int mode)
         {
             int n = work.vertexCount, count = work.blendShapeCount;
             if (count == 0 || groups.Count == 0) return;
@@ -243,7 +244,7 @@ namespace DocMe.EyeInstaller
                     bool anyN = false, anyT = false;
                     for (int i = 0; i < n && !(anyN && anyT); i++) { anyN |= dn[i] != Vector3.zero; anyT |= dt[i] != Vector3.zero; }
 
-                    foreach (var g in groups) EvenOut(g, dv, dn, dt, useMax);
+                    foreach (var g in groups) EvenOut(g, dv, dn, dt, mode);
 
                     frames.Add((work.GetBlendShapeFrameWeight(s, f), (Vector3[])dv.Clone(), anyN ? (Vector3[])dn.Clone() : null, anyT ? (Vector3[])dt.Clone() : null));
                 }
@@ -256,8 +257,9 @@ namespace DocMe.EyeInstaller
                     work.AddBlendShapeFrame(name, w, v, nrm, tan);
         }
 
-        static void EvenOut(EyeGroup g, Vector3[] dv, Vector3[] dn, Vector3[] dt, bool useMax)
+        static void EvenOut(EyeGroup g, Vector3[] dv, Vector3[] dn, Vector3[] dt, int mode)
         {
+            bool useMax = mode == 2, rigid = mode == 3;
             var verts = g.verts;
             Vector3 cen = Vector3.zero;
             foreach (int i in verts) cen += g.rest[i];
@@ -303,8 +305,8 @@ namespace DocMe.EyeInstaller
                     float k = (v + dvv) / v; if (k > 0f && Mathf.Abs(Mathf.Log(k)) > Mathf.Abs(Mathf.Log(svExt))) svExt = k;
                 }
             }
-            float su = useMax ? suExt : (suDen > 1e-12f ? suNum / suDen : 1f);
-            float sv = useMax ? svExt : (svDen > 1e-12f ? svNum / svDen : 1f);
+            float su = rigid ? 1f : useMax ? suExt : (suDen > 1e-12f ? suNum / suDen : 1f);
+            float sv = rigid ? 1f : useMax ? svExt : (svDen > 1e-12f ? svNum / svDen : 1f);
 
             // Shift = what the moved verts did beyond that scale.
             Vector3 t = Vector3.zero;
