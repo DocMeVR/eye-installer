@@ -27,6 +27,10 @@ Open **Tools > DocMe > Eye Shader Installer**.
 
 Highlights or decorations from the old eye can sit on top of the new one. On the Done page press **Select parts to hide**, click them in the Scene view (they light up red; a second click unselects), then press **Hide selected parts** or Enter. Every hide rebuilds the mesh once, so select everything first. The hide tool is its own package, **DocMe Hide Mesh Islands**, which VCC installs together with this one; **Tools > DocMe > Hide Mesh Islands** works for any small part of a mesh.
 
+## If the face disappears
+
+The installer puts a generated copy of the face mesh on the avatar. If that copy goes missing (a copy of the avatar was reverted with an older version, or the file was deleted), the face shows nothing and face tracking has nothing to drive. The Done page then shows **Rebuild from the saved settings**, which puts the eyes and the hidden parts back from what the avatar remembers. An install made before the settings were recorded needs *Remove the eyes* and a fresh Install instead.
+
 ## Blendshapes on a reused eye
 
 In *Reuse the avatar's own eye* mode the eye is drawn on the original iris vertices, so a widen or dilate blendshape that moves some of them stretches the drawn eye and bends its parallax. *Blendshapes and the eye* under Advanced on the Look page decides what happens: **As authored** keeps the shapes as they are, **Scale evenly** rewrites every shape so it moves and scales the whole eye as one flat sheet, and **Move only** rewrites them so the eye moves but never changes size. For pupil dilation use the shader's own pupil slider (it can be animated) rather than a mesh shape. The rewrite happens on Install; the Scene view preview shows the shapes as authored.

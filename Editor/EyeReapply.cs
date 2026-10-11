@@ -55,6 +55,32 @@ namespace DocMe.EyeInstaller
             return false;
         }
 
+        public bool ReferencesMesh(GameObject avatar, Mesh mesh)
+        {
+            var eye = avatar.GetComponent<DocMeEyeInstall>();
+            if (eye == null) return false;
+            foreach (var h in eye.hiddenRenderers) if (h.modifiedMesh == mesh || h.originalMesh == mesh) return true;
+            foreach (var c in eye.createdEyes)
+            {
+                var mf = c.go != null ? c.go.GetComponent<MeshFilter>() : null;
+                if (mf != null && mf.sharedMesh == mesh) return true;
+            }
+            return false;
+        }
+
+        public bool HasMissingMesh(GameObject avatar)
+        {
+            var eye = avatar.GetComponent<DocMeEyeInstall>();
+            if (eye == null) return false;
+            foreach (var h in eye.hiddenRenderers) if (h.modifiedMesh == null || (h.renderer != null && h.renderer.sharedMesh == null)) return true;
+            foreach (var c in eye.createdEyes)
+            {
+                var mf = c.go != null ? c.go.GetComponent<MeshFilter>() : null;
+                if (mf != null && mf.sharedMesh == null) return true;
+            }
+            return false;
+        }
+
         /// <summary>Eyes and hidden parts come off and go back on in the order they were applied.</summary>
         public string Reapply(GameObject avatar)
         {

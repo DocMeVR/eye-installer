@@ -611,11 +611,16 @@ namespace DocMe.EyeInstaller
             GUILayout.Label(L("✓ Eyes installed", "✓ 目を入れました"), _ok);
             GUILayout.Label(L("Look at the avatar in the Scene view. Everything below is optional.", "シーンでアバターを確認してください。以下はすべて任意です。"), _hint);
 
-            if (DocMeReapply.IsStale(avatar))
+            bool missing = DocMeReapply.HasMissingMesh(avatar);
+            if (missing || DocMeReapply.IsStale(avatar))
             {
-                EditorGUILayout.HelpBox(L("The model file changed since the eyes were installed. Re-apply to rebuild them on the new mesh.",
-                                          "目を入れた後にモデルファイルが変わりました。新しいメッシュに作り直すには再適用してください。"), MessageType.Warning);
-                if (GUILayout.Button(L("Re-apply to the updated model", "更新されたモデルに再適用"), GUILayout.Height(24)))
+                if (missing)
+                    EditorGUILayout.HelpBox(L("The generated eye mesh is gone, so the face shows nothing. This happens when a copy of this avatar was reverted or the file was deleted. Rebuild puts it back from the saved settings.",
+                                              "生成した目のメッシュが見つからないため、顔が表示されません。このアバターの複製で元に戻した場合やファイルを削除した場合に起こります。保存した設定から作り直せます。"), MessageType.Error);
+                else
+                    EditorGUILayout.HelpBox(L("The model file changed since the eyes were installed. Re-apply to rebuild them on the new mesh.",
+                                              "目を入れた後にモデルファイルが変わりました。新しいメッシュに作り直すには再適用してください。"), MessageType.Warning);
+                if (GUILayout.Button(missing ? L("Rebuild from the saved settings", "保存した設定から作り直す") : L("Re-apply to the updated model", "更新されたモデルに再適用"), GUILayout.Height(24)))
                 {
                     log = DocMeReapply.ReapplyAll(avatar);
                     seeds.Clear(); previews.Clear(); showOriginal = false;

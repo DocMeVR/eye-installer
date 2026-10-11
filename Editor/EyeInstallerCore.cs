@@ -593,7 +593,8 @@ namespace DocMe.EyeInstaller
 
             Undo.RegisterFullObjectHierarchyUndo(avatar, "Revert DocMe Eyes");
 
-            // Delete generated placed-mesh assets (our quad), but never the user's own mesh.
+            // Delete the generated placed meshes, but never the user's own mesh and never one another avatar
+            // (a duplicate) still uses.
             var generatedMeshes = new HashSet<string>();
             foreach (var c in marker.createdEyes)
             {
@@ -602,7 +603,7 @@ namespace DocMe.EyeInstaller
                 if (mf != null && mf.sharedMesh != null)
                 {
                     string p = AssetDatabase.GetAssetPath(mf.sharedMesh);
-                    if (!string.IsNullOrEmpty(p) && p.StartsWith(GenDir)) generatedMeshes.Add(p);
+                    if (SourceModel.IsGenerated(p) && !DocMeReapply.IsMeshInUse(mf.sharedMesh, avatar)) generatedMeshes.Add(p);
                 }
                 Undo.DestroyObjectImmediate(c.go);
             }
@@ -618,7 +619,7 @@ namespace DocMe.EyeInstaller
                 if (h.renderer != null && h.originalMaterials != null)
                     h.renderer.sharedMaterials = h.originalMaterials; // reshade mode appended a material
 
-                if (h.modifiedMesh != null)
+                if (h.modifiedMesh != null && !DocMeReapply.IsMeshInUse(h.modifiedMesh, avatar))
                 {
                     string p = AssetDatabase.GetAssetPath(h.modifiedMesh);
                     if (!string.IsNullOrEmpty(p)) AssetDatabase.DeleteAsset(p);
