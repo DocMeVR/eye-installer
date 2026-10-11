@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/DocMeVR/eye-installer/compare/1.4.0...1.4.1) (2026-10-11)
+
+
+### Bug Fixes
+
+* **revert:** keep a generated mesh another avatar still uses, and rebuild a missing one ([507e2a8](https://github.com/DocMeVR/eye-installer/commit/507e2a89ef7033e646d1c32aa6311657d3d2901c))
+
 ## [1.4.0](https://github.com/DocMeVR/eye-installer/compare/1.3.0...1.4.0) (2026-10-11)
 
 
