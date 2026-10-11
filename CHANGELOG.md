@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.2](https://github.com/DocMeVR/eye-installer/compare/1.4.1...1.4.2) (2026-10-11)
+
+
+### Bug Fixes
+
+* **deps:** require DocMe Hide Mesh Islands 1.0.1, the version with the revert fix ([97d7959](https://github.com/DocMeVR/eye-installer/commit/97d795985873557b62766cc7b8c1f805ad59d233))
+
 ## [1.4.1](https://github.com/DocMeVR/eye-installer/compare/1.4.0...1.4.1) (2026-10-11)
 
 
