@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/DocMeVR/eye-installer/compare/1.3.0...1.4.0) (2026-10-11)
+
+
+### Features
+
+* **look:** move-only mode keeps a reused eye's size under blendshapes ([8bda032](https://github.com/DocMeVR/eye-installer/commit/8bda032cb5aad8104c14dee81a28fe59641a72b6))
+
 ## [1.3.0](https://github.com/DocMeVR/eye-installer/compare/1.2.0...1.3.0) (2026-10-10)
 
 
