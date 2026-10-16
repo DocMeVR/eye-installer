@@ -454,11 +454,10 @@ namespace DocMe.EyeInstaller
             if (mf != null && mf.sharedMesh != null) bs = mf.sharedMesh.bounds.size;
 
             int flat = FlatAxis(bs);
-            Vector3 meshNormalLocal = Axis(flat);
 
-            // Aim the flat axis along the eye's view direction, angle and roll included.
+            // Turn the mesh's front toward the viewer and its picture upright, angle and roll included.
             EyeFrame(d, opt, out Vector3 fwd, out Vector3 up, out _);
-            t.rotation = FitRotation(meshNormalLocal, fwd, up);
+            t.rotation = FitRotation(mf != null ? mf.sharedMesh : null, fwd, up);
 
             t.position = d.centerWorld
                        + d.forwardWorld * (depth + opt.depthOffset)
@@ -489,8 +488,45 @@ namespace DocMe.EyeInstaller
 
         // The mesh's thinnest axis is its view axis: a quad is flat in Z, a custom eye mesh in whatever it was built with.
         static int FlatAxis(Vector3 bs) => (bs.x <= bs.y && bs.x <= bs.z) ? 0 : (bs.y <= bs.x && bs.y <= bs.z) ? 1 : 2;
-        static Quaternion FitRotation(Vector3 meshNormalLocal, Vector3 fwd, Vector3 up)
-            => Quaternion.LookRotation(fwd, up) * Quaternion.FromToRotation(meshNormalLocal, Vector3.forward);
+        static Quaternion FitRotation(Mesh mesh, Vector3 fwd, Vector3 up)
+        {
+            MeshFrame(mesh, out Vector3 front, out Vector3 meshUp);
+            return Quaternion.LookRotation(fwd, up) * Quaternion.Inverse(Quaternion.LookRotation(front, meshUp));
+        }
+
+        /// <summary>Which way an eye mesh faces and which way its picture's up runs, in mesh space. Front comes from the
+        /// triangle winding, the side Cull Back draws, so a mesh is never placed with its back to the viewer (Unity's
+        /// own Quad faces -Z, the old generated quad +Z). Up follows the UV's v direction, so the picture stands upright
+        /// and its u runs to the viewer's right. Bounds axes are the fallback for meshes without usable data.</summary>
+        public static void MeshFrame(Mesh mesh, out Vector3 front, out Vector3 up)
+        {
+            front = Vector3.forward; up = Vector3.up;
+            if (mesh == null) return;
+            int flat = FlatAxis(mesh.bounds.size);
+            front = Axis(flat);
+            up = flat == 1 ? Vector3.forward : Vector3.up;
+            if (!mesh.isReadable) return;
+
+            var v = mesh.vertices; var tris = mesh.triangles; var uv = mesh.uv;
+            bool hasUv = uv != null && uv.Length == v.Length;
+            Vector3 f = Vector3.zero, vDir = Vector3.zero;
+            for (int k = 0; k + 2 < tris.Length; k += 3)
+            {
+                Vector3 e1 = v[tris[k + 1]] - v[tris[k]], e2 = v[tris[k + 2]] - v[tris[k]];
+                f += Vector3.Cross(e1, e2);
+                if (!hasUv) continue;
+                Vector2 d1 = uv[tris[k + 1]] - uv[tris[k]], d2 = uv[tris[k + 2]] - uv[tris[k]];
+                float det = d1.x * d2.y - d2.x * d1.y;
+                if (Mathf.Abs(det) < 1e-12f) continue;
+                Vector3 dPdv = (e2 * d1.x - e1 * d2.x) / det;
+                float len = dPdv.magnitude;
+                if (len > 1e-20f) vDir += dPdv / len * Vector3.Cross(e1, e2).magnitude;
+            }
+            if (f.sqrMagnitude > 1e-30f) front = f / f.magnitude;
+            Vector3 u = Vector3.ProjectOnPlane(vDir.sqrMagnitude > 1e-30f ? vDir : up, front);
+            if (u.sqrMagnitude < 1e-12f) u = Vector3.ProjectOnPlane(Axis((flat + 2) % 3), front);
+            if (u.sqrMagnitude > 1e-12f) up = u / u.magnitude;
+        }
 
         /// <summary>Stores, per vertex in UV3, where the avatar's forward axis points in the eye surface's tangent
         /// space, the way the parallax shaders measure view directions (xy over z). The shader subtracts it, so an
@@ -503,14 +539,14 @@ namespace DocMe.EyeInstaller
             var normals = mesh.normals;
             var tangents = mesh.tangents;
             bool hasN = normals != null && normals.Length == n, hasT = tangents != null && tangents.Length == n;
-            Vector3 meshNormalLocal = Axis(FlatAxis(mesh.bounds.size));
+            MeshFrame(mesh, out Vector3 meshFront, out _);
             EyeFrame(d, opt, out Vector3 fwd, out Vector3 up, out _);
-            Vector3 fLocal = Quaternion.Inverse(FitRotation(meshNormalLocal, fwd, up)) * d.forwardWorld.normalized;
+            Vector3 fLocal = Quaternion.Inverse(FitRotation(mesh, fwd, up)) * d.forwardWorld.normalized;
 
             var uv3 = new List<Vector2>(n);
             for (int i = 0; i < n; i++)
             {
-                Vector3 N = (hasN ? normals[i] : meshNormalLocal).normalized;
+                Vector3 N = (hasN ? normals[i] : meshFront).normalized;
                 Vector4 t4 = hasT ? tangents[i] : new Vector4(1f, 0f, 0f, -1f);
                 Vector3 T = new Vector3(t4.x, t4.y, t4.z);
                 if (T.sqrMagnitude < 1e-8f) T = Vector3.Cross(N, Vector3.up);
@@ -539,9 +575,11 @@ namespace DocMe.EyeInstaller
             EditorUtility.SetDirty(mf.sharedMesh);
         }
 
-        /// <summary>The eye's view axis and in-plane axes after the angle and roll settings. Each eye turns toward
-        /// its own outer side, so the pair stays mirror symmetric; in mirror mode the right eye rolls the other
-        /// way. Both build modes place the eye in this frame, and the parallax shader works in the surface's own
+        /// <summary>The eye's view axis and in-plane axes after the angle and roll settings, as a viewer in front of
+        /// the avatar sees them: <paramref name="fwd"/> points at that viewer, <paramref name="right"/> is the
+        /// viewer's right (the avatar's left), so a picture laid out along it reads like the shader preview. Each eye
+        /// turns toward its own outer side, so the pair stays mirror symmetric; in mirror mode the right eye rolls the
+        /// other way. Both build modes place the eye in this frame, and the parallax shader works in the surface's own
         /// tangent space, so an angled eye behaves exactly like a straight one.</summary>
         public static void EyeFrame(EyeData d, Options opt, out Vector3 fwd, out Vector3 up, out Vector3 right)
         {
@@ -563,7 +601,7 @@ namespace DocMe.EyeInstaller
             }
             up = Vector3.ProjectOnPlane(Vector3.up, fwd).normalized;
             if (up.sqrMagnitude < 1e-4f) up = upRef;
-            right = Vector3.Cross(up, fwd).normalized;
+            right = Vector3.Cross(fwd, up).normalized;
 
             float roll = RollFor(d, opt);
             if (Mathf.Abs(roll) > 1e-4f)
