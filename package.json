@@ -1,7 +1,7 @@
 {
   "name": "com.docme.eye-installer",
   "displayName": "DocMe Eye Installer",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "unity": "2022.3",
   "description": "Puts a procedural eye shader onto any VRChat avatar: finds the eyes, hides or reuses the original eye mesh, places the new eye, and lets you fine tune it with a live preview. Works with the DocMe eye shaders and any other flat eye material.",
   "author": {
