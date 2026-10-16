@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.3](https://github.com/DocMeVR/eye-installer/compare/1.4.2...1.4.3) (2026-10-16)
+
+
+### Bug Fixes
+
+* **look:** show installed eyes the way the shader preview does, and never facing away ([b462b18](https://github.com/DocMeVR/eye-installer/commit/b462b184c13aa08b85f3105d98c740e554611dfe))
+
 ## [1.4.2](https://github.com/DocMeVR/eye-installer/compare/1.4.1...1.4.2) (2026-10-11)
 
 
