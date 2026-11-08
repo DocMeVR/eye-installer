@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/DocMeVR/eye-installer/compare/1.4.3...1.5.0) (2026-11-08)
+
+
+### Features
+
+* **i18n:** move the installer's texts to language files ([5999c1e](https://github.com/DocMeVR/eye-installer/commit/5999c1e2d20676ef6ae8fca51b9068278595a0d3))
+
 ## [1.4.3](https://github.com/DocMeVR/eye-installer/compare/1.4.2...1.4.3) (2026-10-16)
 
 
