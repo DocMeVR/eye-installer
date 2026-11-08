@@ -87,9 +87,9 @@ namespace DocMe.EyeInstaller
             var sb = new StringBuilder();
             var eye = avatar.GetComponent<DocMeEyeInstall>();
             var hide = avatar.GetComponent<DocMeIslandHide>();
-            if (eye == null && hide == null) return "Nothing installed.";
+            if (eye == null && hide == null) return L.Text("reapply.nothing");
             if ((eye != null && eye.appliedAt == 0) || (hide != null && hide.appliedAt == 0))
-                return "⚠ Installed with an older version that didn't record its settings. Revert and install once more; after that it re-applies by itself.";
+                return L.Text("reapply.old");
 
             var eyeRecipe = eye != null ? eye.recipe : null;
             long eyeAt = eye != null ? eye.appliedAt : 0;
@@ -113,8 +113,8 @@ namespace DocMe.EyeInstaller
                     else lost++;
                 }
                 EyeInstallerCore.Install(avatar, eyes, EyeInstallerCore.FromRecipe(eyeRecipe));
-                sb.AppendLine(avatar.GetComponent<DocMeEyeInstall>() != null ? "Eyes re-applied." : "⚠ Eyes could not be re-applied.");
-                if (lost > 0) sb.AppendLine($"⚠ {lost} eye {(lost == 1 ? "pick" : "picks")} no longer match the mesh and were dropped (auto detection used where none were left).");
+                sb.AppendLine(L.Text(avatar.GetComponent<DocMeEyeInstall>() != null ? "reapply.done" : "reapply.failed"));
+                if (lost > 0) sb.AppendLine(L.Count(lost, "reapply.dropped", lost));
             }
 
             void Hide()

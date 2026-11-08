@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using DocMe.HideIslands;
+using HideL = DocMe.HideIslands.L;
 using UnityEngine;
 
 namespace DocMe.EyeInstaller
@@ -28,7 +29,6 @@ namespace DocMe.EyeInstaller
         bool dropBackFaces = true;
         int evenEyeShapes = 0;
         bool lockAspect = true;
-        bool japanese = false;
         float widthFactor = 1.3f;
         float heightFactor = 1.3f;
         float depthOffset = 0f;
@@ -119,7 +119,6 @@ namespace DocMe.EyeInstaller
             EditorPrefs.SetBool(PK + "dropBackFaces", dropBackFaces);
             EditorPrefs.SetInt(PK + "evenEyeShapes", evenEyeShapes);
             EditorPrefs.SetBool(PK + "lockAspect", lockAspect);
-            EditorPrefs.SetBool(PK + "japanese", japanese);
             EditorPrefs.SetBool(PK + "preview", previewOn);
             EditorPrefs.SetBool("DocMe.IslandHide.delete", hides.deleteGeometry);
             EditorPrefs.SetBool("DocMe.IslandHide.sink", hides.sinkIntoHead);
@@ -148,7 +147,6 @@ namespace DocMe.EyeInstaller
             dropBackFaces    = EditorPrefs.GetBool(PK + "dropBackFaces", dropBackFaces);
             evenEyeShapes    = EditorPrefs.GetInt(PK + "evenEyeShapes", evenEyeShapes);
             lockAspect       = EditorPrefs.GetBool(PK + "lockAspect", lockAspect);
-            japanese         = EditorPrefs.GetBool(PK + "japanese", japanese);
             hides.deleteGeometry = EditorPrefs.GetBool("DocMe.IslandHide.delete", hides.deleteGeometry);
             hides.sinkIntoHead   = EditorPrefs.GetBool("DocMe.IslandHide.sink", hides.sinkIntoHead);
             widthFactor      = EditorPrefs.GetFloat(PK + "widthFactor", widthFactor);
@@ -210,9 +208,8 @@ namespace DocMe.EyeInstaller
         }
 
 
-        string L(string en, string jp) => japanese ? jp : en;
-        GUIContent GC(string en, string jp, string tEn = null, string tJp = null)
-            => new GUIContent(L(en, jp), tEn == null ? null : L(tEn, tJp));
+        static GUIContent GC(string key, string tipKey = null) => new GUIContent(L.Text(key), L.Tip(tipKey ?? key + ".tip"));
+        static GUIContent HGC(string key, string tipKey = null) => new GUIContent(HideL.Text(key), HideL.Tip(tipKey ?? key + ".tip"));
 
         GUIStyle _title, _big, _hint, _ok, _warn, _sel, _box, _choice;
         void EnsureStyles()
@@ -256,15 +253,13 @@ namespace DocMe.EyeInstaller
         {
             using (new EditorGUILayout.HorizontalScope())
             {
-                GUILayout.Label(L("DocMe Eyes", "DocMe アイ"), _title);
+                GUILayout.Label(L.Text("window.title"), _title);
                 GUILayout.FlexibleSpace();
-                int cur = japanese ? 1 : 0;
-                int sel = GUILayout.Toolbar(cur, new[] { "EN", "日本語" }, GUILayout.Width(110), GUILayout.Height(20));
-                if (sel != cur) { japanese = sel == 1; SaveSettings(); GUIUtility.keyboardControl = 0; }
+                if (DocMeLanguage.DrawPicker(L.Table.Languages())) Repaint();
             }
 
             // Step strip. Finished steps can be clicked; later ones wait until the step before is done.
-            string[] names = { L("1 Avatar", "1 アバター"), L("2 Eyes", "2 目"), L("3 Look", "3 見た目"), L("4 Done", "4 完了") };
+            string[] names = { L.Text("step.avatar"), L.Text("step.eyes"), L.Text("step.look"), L.Text("step.done") };
             using (new EditorGUILayout.HorizontalScope())
             {
                 for (int i = 0; i < names.Length; i++)
@@ -308,7 +303,7 @@ namespace DocMe.EyeInstaller
             using (new EditorGUILayout.HorizontalScope())
             {
                 using (new EditorGUI.DisabledScope(page == Page.Avatar))
-                    if (GUILayout.Button(L("◀ Back", "◀ 戻る"), GUILayout.Height(26), GUILayout.Width(90)))
+                    if (GUILayout.Button(L.Text("nav.back"), GUILayout.Height(26), GUILayout.Width(90)))
                         GoTo(page == Page.Done ? Page.Look : (Page)((int)page - 1));
 
                 GUILayout.FlexibleSpace();
@@ -317,21 +312,21 @@ namespace DocMe.EyeInstaller
                 {
                     case Page.Avatar:
                         using (new EditorGUI.DisabledScope(!CanReach(Page.Eyes)))
-                            if (GUILayout.Button(L("Next ▶", "次へ ▶"), GUILayout.Height(26), GUILayout.Width(110))) GoTo(Page.Eyes);
+                            if (GUILayout.Button(L.Text("nav.next"), GUILayout.Height(26), GUILayout.Width(110))) GoTo(Page.Eyes);
                         break;
                     case Page.Eyes:
                         using (new EditorGUI.DisabledScope(!CanReach(Page.Look)))
-                            if (GUILayout.Button(L("Looks right ▶", "これで合っている ▶"), GUILayout.Height(26), GUILayout.Width(150))) GoTo(Page.Look);
+                            if (GUILayout.Button(L.Text("nav.looksRight"), GUILayout.Height(26), GUILayout.Width(150))) GoTo(Page.Look);
                         break;
                     case Page.Look:
                         GUI.backgroundColor = new Color(0.55f, 0.85f, 0.55f);
                         using (new EditorGUI.DisabledScope(material == null))
-                            if (GUILayout.Button(HasInstall() ? L("Apply changes", "変更を反映") : L("Install eyes", "目をインストール"), GUILayout.Height(28), GUILayout.Width(150)))
+                            if (GUILayout.Button(HasInstall() ? L.Text("nav.applyChanges") : L.Text("nav.install"), GUILayout.Height(28), GUILayout.Width(150)))
                                 Install();
                         GUI.backgroundColor = Color.white;
                         break;
                     case Page.Done:
-                        if (GUILayout.Button(L("Another avatar", "別のアバター"), GUILayout.Height(26), GUILayout.Width(130)))
+                        if (GUILayout.Button(L.Text("nav.anotherAvatar"), GUILayout.Height(26), GUILayout.Width(130)))
                         {
                             EndPreview();
                             avatar = null; detected = null; seeds.Clear(); hides.Forget(); hides.avatar = null; previews.Clear();
@@ -341,32 +336,31 @@ namespace DocMe.EyeInstaller
                 }
             }
 
-            showDetails = EditorGUILayout.Foldout(showDetails, L("Details", "詳細"), true);
+            showDetails = EditorGUILayout.Foldout(showDetails, L.Text("details"), true);
             if (showDetails)
             {
                 string text = string.IsNullOrEmpty(log) ? detectLog : log;
-                EditorGUILayout.TextArea(string.IsNullOrEmpty(text) ? L("(nothing yet)", "（まだありません）") : text, GUILayout.MinHeight(60), GUILayout.MaxHeight(140));
+                EditorGUILayout.TextArea(string.IsNullOrEmpty(text) ? L.Text("details.empty") : text, GUILayout.MinHeight(60), GUILayout.MaxHeight(140));
             }
         }
 
 
         void DrawAvatarPage()
         {
-            GUILayout.Label(L("Which avatar gets the new eyes?", "どのアバターに目を入れますか？"), _big);
-            GUILayout.Label(L("Drag your avatar from the Hierarchy into the field below. If it is selected already, it is picked up for you.",
-                              "Hierarchy からアバターを下の欄にドラッグしてください。選択中なら自動で入ります。"), _hint);
+            GUILayout.Label(L.Text("avatar.title"), _big);
+            GUILayout.Label(L.Text("avatar.intro"), _hint);
             EditorGUILayout.Space(6);
 
             using (new EditorGUILayout.VerticalScope(_box))
             {
                 EditorGUI.BeginChangeCheck();
-                avatar = (GameObject)EditorGUILayout.ObjectField(GC("Avatar", "アバター"), avatar, typeof(GameObject), true);
+                avatar = (GameObject)EditorGUILayout.ObjectField(GC("avatar.field"), avatar, typeof(GameObject), true);
                 if (EditorGUI.EndChangeCheck()) OnAvatarSet();
 
                 if (avatar == null)
                 {
                     var fromSel = AvatarFromSelection();
-                    if (fromSel != null && GUILayout.Button(L($"Use selected: {fromSel.name}", $"選択中の「{fromSel.name}」を使う"), GUILayout.Height(24)))
+                    if (fromSel != null && GUILayout.Button(L.Text("avatar.useSelected", fromSel.name), GUILayout.Height(24)))
                     { avatar = fromSel; OnAvatarSet(); }
                 }
                 else
@@ -374,8 +368,7 @@ namespace DocMe.EyeInstaller
                     EditorGUILayout.Space(4);
                     DrawDetectionStatus();
                     if (HasInstall())
-                        GUILayout.Label(L("This avatar already has DocMe eyes. Step 4 lets you adjust or remove them.",
-                                          "このアバターには DocMe の目が入っています。ステップ4で調整や削除ができます。"), _hint);
+                        GUILayout.Label(L.Text("avatar.hasEyes"), _hint);
                 }
             }
         }
@@ -396,24 +389,22 @@ namespace DocMe.EyeInstaller
         {
             if (detected == null || detected.Count == 0)
             {
-                GUILayout.Label(L("⚠ No eye bones found on this avatar. Make sure the Animator is humanoid with LeftEye and RightEye mapped.",
-                                  "⚠ 目のボーンが見つかりません。Animator が Humanoid で LeftEye / RightEye が設定されているか確認してください。"), _warn);
+                GUILayout.Label(L.Text("eyes.noBones"), _warn);
                 return;
             }
             var l = detected.Find(d => d.label == "L"); var r = detected.Find(d => d.label == "R");
             bool okL = l != null && (l.HasIsland || l.HasSeed), okR = r != null && (r.HasIsland || r.HasSeed);
             string mesh = l?.renderer != null ? l.renderer.name : r?.renderer != null ? r.renderer.name : "?";
-            if (okL && okR) GUILayout.Label(L($"✓ Found both eyes on '{mesh}'.", $"✓ 両目を「{mesh}」で見つけました。"), _ok);
-            else if (okL || okR) GUILayout.Label(L($"⚠ Found only the {(okL ? "left" : "right")} eye. Fix the other one in step 2.", $"⚠ {(okL ? "左" : "右")}目だけ見つかりました。ステップ2でもう片方を直してください。"), _warn);
-            else GUILayout.Label(L("⚠ Eye bones found, but not the eye surface. Click the eyes in step 2.", "⚠ 目のボーンはありますが目の面が見つかりません。ステップ2で目をクリックしてください。"), _warn);
+            if (okL && okR) GUILayout.Label(L.Text("eyes.foundBoth", mesh), _ok);
+            else if (okL || okR) GUILayout.Label(L.Text(okL ? "eyes.foundOnlyLeft" : "eyes.foundOnlyRight"), _warn);
+            else GUILayout.Label(L.Text("eyes.noSurface"), _warn);
         }
 
 
         void DrawEyesPage()
         {
-            GUILayout.Label(L("Are these the eyes?", "ここが目で合っていますか？"), _big);
-            GUILayout.Label(L("The found eyes are tinted in the Scene view: blue = left, orange = right. If a tint sits on the wrong spot or is missing, press Fix and click the iris.",
-                              "見つけた目はシーンに色が付きます（青＝左、オレンジ＝右）。場所が違う、または色が無い場合は「直す」を押して目（虹彩）をクリックしてください。"), _hint);
+            GUILayout.Label(L.Text("eyes.title"), _big);
+            GUILayout.Label(L.Text("eyes.about"), _hint);
             EditorGUILayout.Space(6);
 
             using (new EditorGUILayout.VerticalScope(_box))
@@ -426,43 +417,39 @@ namespace DocMe.EyeInstaller
                     DrawPickButton("R");
                 }
                 if (pickMode == "L" || pickMode == "R")
-                    GUILayout.Label(L("Click the iris in the Scene view. Each click adds one piece; press Esc or the button again when done.",
-                                      "シーンで虹彩をクリックしてください。クリックごとに1つ追加されます。終わったら Esc か同じボタンを押します。"), _hint);
+                    GUILayout.Label(L.Text("eyes.pickHelp"), _hint);
                 bool anyPicks = false; foreach (var kv in seeds) anyPicks |= kv.Value.Count > 0;
                 if (anyPicks)
                     using (new EditorGUILayout.HorizontalScope())
                     {
                         using (new EditorGUI.DisabledScope(pickMode == null || !seeds.TryGetValue(pickMode, out var l) || l.Count == 0))
-                            if (GUILayout.Button(L("Undo last click", "最後のクリックを取り消す"))) RemoveLastPoint();
-                        if (GUILayout.Button(L("Use auto again", "自動検出に戻す"))) { seeds.Clear(); previews.Clear(); pickMode = null; SceneView.RepaintAll(); }
+                            if (GUILayout.Button(L.Text("eyes.undoClick"))) RemoveLastPoint();
+                        if (GUILayout.Button(L.Text("eyes.useAuto"))) { seeds.Clear(); previews.Clear(); pickMode = null; SceneView.RepaintAll(); }
                     }
             }
 
-            advancedEyes = EditorGUILayout.Foldout(advancedEyes, L("Advanced", "詳細設定"), true);
+            advancedEyes = EditorGUILayout.Foldout(advancedEyes, L.Text("advanced"), true);
             if (advancedEyes)
             {
                 EditorGUI.indentLevel++;
                 EditorGUI.BeginChangeCheck();
                 eyeRenderer = (SkinnedMeshRenderer)EditorGUILayout.ObjectField(
-                    GC("Eyes are on this mesh", "目があるメッシュ",
-                       "Leave empty to search every body mesh. Set it when the eyes sit on a specific mesh.",
-                       "空欄なら全てのボディメッシュを探します。目が特定のメッシュにある場合に指定します。"),
+                    GC("eyes.mesh"),
                     eyeRenderer, typeof(SkinnedMeshRenderer), true);
                 if (EditorGUI.EndChangeCheck()) SaveSettings();
                 EditorGUI.indentLevel--;
             }
         }
 
-        string PickName(string key) => key == "L" ? L("left eye", "左目") : key == "R" ? L("right eye", "右目") : L("parts to hide", "隠す部分");
-
         void DrawPickButton(string label)
         {
             bool active = pickMode == label;
             int count = seeds.TryGetValue(label, out var l) ? l.Count : 0;
             GUI.backgroundColor = active ? new Color(0.6f, 0.8f, 1f) : (count > 0 ? new Color(0.6f, 0.9f, 0.6f) : Color.white);
-            string side = label == "L" ? L("left", "左") : L("right", "右");
-            string text = active ? L($"Clicking {side}… ({count})", $"{side}目を選択中… ({count})")
-                        : count > 0 ? L($"{side} ✓ {count} picked", $"{side}目 ✓ {count}") : L($"Fix {side} eye", $"{side}目を直す");
+            bool left = label == "L";
+            string text = active ? L.Text(left ? "eyes.pick.left.active" : "eyes.pick.right.active", count)
+                        : count > 0 ? L.Text(left ? "eyes.pick.left.picked" : "eyes.pick.right.picked", count)
+                        : L.Text(left ? "eyes.pick.left.fix" : "eyes.pick.right.fix");
             if (GUILayout.Button(text, GUILayout.Height(26)))
             {
                 pickMode = active ? null : label;
@@ -484,108 +471,92 @@ namespace DocMe.EyeInstaller
 
         void DrawLookPage()
         {
-            GUILayout.Label(L("How should the new eyes look?", "新しい目の見た目"), _big);
+            GUILayout.Label(L.Text("look.title"), _big);
             using (new EditorGUILayout.HorizontalScope())
             {
                 EditorGUI.BeginChangeCheck();
-                previewOn = EditorGUILayout.ToggleLeft(GC("Preview in the Scene view", "シーンでプレビュー",
-                    "Shows the result on the avatar as you change settings. Nothing is saved until you press Install.",
-                    "設定を変えるたびに結果をアバターに表示します。「インストール」を押すまで何も保存されません。"), previewOn, GUILayout.Width(200));
+                previewOn = EditorGUILayout.ToggleLeft(GC("look.preview"), previewOn, GUILayout.Width(200));
                 if (EditorGUI.EndChangeCheck()) { SaveSettings(); if (previewOn) MarkPreviewDirty(); else EndPreview(); }
                 GUILayout.FlexibleSpace();
-                GUILayout.Label(!previewOn ? "" : previewDirty ? L("Updating preview…", "プレビューを更新中…") : preview != null && !preview.IsEmpty ? L("Preview shown", "プレビュー表示中") : "", _hint);
+                GUILayout.Label(!previewOn ? "" : previewDirty ? L.Text("look.preview.updating") : preview != null && !preview.IsEmpty ? L.Text("look.preview.shown") : "", _hint);
             }
             EditorGUILayout.Space(4);
 
             using (new EditorGUILayout.VerticalScope(_box))
             {
                 EditorGUI.BeginChangeCheck();
-                material = (Material)EditorGUILayout.ObjectField(GC("Eye material", "目のマテリアル",
-                    "One of the DocMe eye materials. You can swap it later on the renderer.", "DocMe の目マテリアル。後からレンダラーで差し替えできます。"),
+                material = (Material)EditorGUILayout.ObjectField(GC("look.material"),
                     material, typeof(Material), false);
-                if (material == null) GUILayout.Label(L("Pick an eye material to continue.", "目のマテリアルを選んでください。"), _warn);
+                if (material == null) GUILayout.Label(L.Text("look.material.missing"), _warn);
 
                 EditorGUILayout.Space(6);
-                GUILayout.Label(L("How to build the eye", "目の作り方"), EditorStyles.boldLabel);
+                GUILayout.Label(L.Text("look.build"), EditorStyles.boldLabel);
                 DrawModeChoice(false,
-                    L("Flat eye in the socket", "まぶたの奥に平らな目"),
-                    L("A new flat eye behind the eyelids, the old one hidden. Works on every avatar.", "まぶたの奥に新しい平らな目を置き、元の目は隠します。どのアバターでも使えます。"));
+                    L.Text("look.mode.flat"),
+                    L.Text("look.mode.flat.about"));
                 DrawModeChoice(true,
-                    L("Reuse the avatar's own eye", "アバターの目をそのまま使う"),
-                    L("The original eye surface gets the new shader, so it still moves with blinks and expressions. Best when the old eye is a flat sheet.", "元の目の面に新しいシェーダーを当てます。まばたきや表情に合わせて動きます。元の目が平らな場合に向いています。"));
+                    L.Text("look.mode.reuse"),
+                    L.Text("look.mode.reuse.about"));
 
                 EditorGUILayout.Space(6);
                 if (lockAspect)
                 {
-                    float s = EditorGUILayout.Slider(GC("Size", "サイズ", "1.0 = same size as the avatar's eye.", "1.0 ＝ 元の目と同じ大きさ。"), widthFactor, 0.3f, 3f);
+                    float s = EditorGUILayout.Slider(GC("look.size"), widthFactor, 0.3f, 3f);
                     widthFactor = heightFactor = s;
                 }
                 else
                 {
-                    widthFactor  = EditorGUILayout.Slider(GC("Width", "幅"), widthFactor, 0.3f, 3f);
-                    heightFactor = EditorGUILayout.Slider(GC("Height", "高さ"), heightFactor, 0.3f, 3f);
+                    widthFactor  = EditorGUILayout.Slider(GC("look.width"), widthFactor, 0.3f, 3f);
+                    heightFactor = EditorGUILayout.Slider(GC("look.height"), heightFactor, 0.3f, 3f);
                 }
                 if (EditorGUI.EndChangeCheck()) { SaveSettings(); MarkPreviewDirty(); }
             }
 
-            advancedLook = EditorGUILayout.Foldout(advancedLook, L("Advanced", "詳細設定"), true);
+            advancedLook = EditorGUILayout.Foldout(advancedLook, L.Text("advanced"), true);
             if (advancedLook)
             {
                 EditorGUI.indentLevel++;
                 EditorGUI.BeginChangeCheck();
-                lockAspect = EditorGUILayout.ToggleLeft(GC("Same width and height", "幅と高さを同じにする"), lockAspect);
-                depthOffset      = EditorGUILayout.Slider(GC("Depth", "前後", "Forward (+) or deeper (−), in metres.", "前へ(＋)／奥へ(−)、メートル。"), depthOffset, -0.02f, 0.02f);
-                verticalOffset   = EditorGUILayout.Slider(GC("Up / down", "上下"), verticalOffset, -0.02f, 0.02f);
-                horizontalOffset = EditorGUILayout.Slider(GC("Apart / together", "左右", "Apart (+) or toward the nose (−).", "外へ(＋)／鼻側へ(−)。"), horizontalOffset, -0.02f, 0.02f);
-                angleOut = EditorGUILayout.Slider(GC("Angle outward", "外向きの角度",
-                    "Turns each eye toward its own outer side, in degrees. For faces whose eyes sit on the sides, so they do not thin out when seen from the side.",
-                    "それぞれの目を外側へ向けます（度）。目が顔の横寄りにあるアバターで、横から見ても細くならないように。"), angleOut, -30f, 30f);
-                angleUp = EditorGUILayout.Slider(GC("Tilt up / down", "上下の傾き", "Tilts both eyes up (+) or down (−), in degrees.", "両目を上(＋)／下(−)へ傾けます（度）。"), angleUp, -30f, 30f);
+                lockAspect = EditorGUILayout.ToggleLeft(GC("look.sameSize"), lockAspect);
+                depthOffset      = EditorGUILayout.Slider(GC("look.depth"), depthOffset, -0.02f, 0.02f);
+                verticalOffset   = EditorGUILayout.Slider(GC("look.upDown"), verticalOffset, -0.02f, 0.02f);
+                horizontalOffset = EditorGUILayout.Slider(GC("look.apart"), horizontalOffset, -0.02f, 0.02f);
+                angleOut = EditorGUILayout.Slider(GC("look.angleOut"), angleOut, -30f, 30f);
+                angleUp = EditorGUILayout.Slider(GC("look.tilt"), angleUp, -30f, 30f);
                 bool mirror = rollMode != EyeInstallerCore.RollIndependent;
-                rollOffset = EditorGUILayout.Slider(GC(mirror ? "Roll" : "Roll (left eye)", mirror ? "回転" : "回転（左目）",
-                    "Spins the eye around its view axis, in degrees.", "目を視線の軸まわりに回します（度）。"), rollOffset, -180f, 180f);
-                bool mirrorNow = EditorGUILayout.ToggleLeft(GC("Mirror the roll on the right eye", "右目は鏡写しに回す",
-                    "On: the right eye rolls the opposite way, so both eyes tilt alike. Off: the right eye gets its own roll.",
-                    "オン：右目は逆向きに回り、両目が同じ傾きになります。オフ：右目は別の値で回します。"), mirror);
+                rollOffset = EditorGUILayout.Slider(GC(mirror ? "look.roll" : "look.roll.left", "look.roll.tip"), rollOffset, -180f, 180f);
+                bool mirrorNow = EditorGUILayout.ToggleLeft(GC("look.mirrorRoll"), mirror);
                 if (mirrorNow != mirror) rollMode = mirrorNow ? EyeInstallerCore.RollMirror : EyeInstallerCore.RollIndependent;
-                if (!mirrorNow) rollRightOffset = EditorGUILayout.Slider(GC("Roll (right eye)", "回転（右目）"), rollRightOffset, -180f, 180f);
+                if (!mirrorNow) rollRightOffset = EditorGUILayout.Slider(GC("look.roll.right", "look.roll.tip"), rollRightOffset, -180f, 180f);
                 EditorGUILayout.Space(4);
 
                 if (!deformWithFace)
                 {
-                    eyeMesh = (Mesh)EditorGUILayout.ObjectField(GC("Custom eye mesh", "独自の目メッシュ",
-                        "Empty = a generated flat quad. Use your own mesh if you have one.", "空欄なら平面を自動生成します。独自メッシュがあれば指定してください。"), eyeMesh, typeof(Mesh), false);
-                    inSocket = EditorGUILayout.ToggleLeft(GC("Place behind the eyelids", "まぶたの内側に配置",
-                        "Off puts the eye on the face surface instead of at the iris depth.", "オフにすると目を顔の表面に置きます。"), inSocket);
-                    hideOriginal = EditorGUILayout.ToggleLeft(GC("Hide the original eyes", "元の目を隠す"), hideOriginal);
+                    eyeMesh = (Mesh)EditorGUILayout.ObjectField(GC("look.customMesh"), eyeMesh, typeof(Mesh), false);
+                    inSocket = EditorGUILayout.ToggleLeft(GC("look.behindLids"), inSocket);
+                    hideOriginal = EditorGUILayout.ToggleLeft(GC("look.hideOriginal"), hideOriginal);
                     using (new EditorGUI.DisabledScope(!hideOriginal))
                     {
-                        deleteOriginal = EditorGUILayout.ToggleLeft(GC("Delete them instead of folding them away", "畳まずに削除する",
-                            "Folding uses a blendshape and can be undone. Deleting removes the triangles, which stops other blendshapes from pulling them back into view.",
-                            "畳む方法はブレンドシェイプで、元に戻せます。削除はポリゴンを消すので、他のブレンドシェイプで再表示されることがありません。"), deleteOriginal);
+                        deleteOriginal = EditorGUILayout.ToggleLeft(GC("look.deleteOriginal"), deleteOriginal);
                         using (new EditorGUI.DisabledScope(deleteOriginal))
-                            sinkIntoHead = EditorGUILayout.ToggleLeft(GC("Fold them into the head", "頭の中に畳み込む"), sinkIntoHead);
+                            sinkIntoHead = EditorGUILayout.ToggleLeft(GC("look.foldIntoHead"), sinkIntoHead);
                     }
                 }
                 else
                 {
-                    flattenEye = EditorGUILayout.ToggleLeft(GC("Flatten the eye", "目を平らにする", "Projects the eye onto a flat plane facing forward.", "目を正面向きの平面にそろえます。"), flattenEye);
+                    flattenEye = EditorGUILayout.ToggleLeft(GC("look.flatten"), flattenEye);
                     using (new EditorGUI.DisabledScope(!flattenEye))
-                        dropBackFaces = EditorGUILayout.ToggleLeft(GC("Remove the back half of a round eye", "丸い目の裏半分を削除",
-                            "A ball-shaped eye would fold onto itself when flattened. Turn off if the eye is already flat.", "球状の目は平らにすると重なります。元から平らな目ならオフにしてください。"), dropBackFaces);
-                    evenEyeShapes = EditorGUILayout.Popup(GC("Blendshapes and the eye", "ブレンドシェイプと目",
-                        "Rewrites the avatar's blendshapes on the new eye. As authored: the eye stretches with the vertices. Scale evenly: the shape moves and scales the whole eye as one flat sheet. Move only: the shape moves the eye but never changes its size; use the shader's pupil slider for dilation.",
-                        "新しい目に対するブレンドシェイプの扱い。元のまま：頂点と一緒に目が伸びます。均等に拡大：目全体を平らなまま動かして拡大します。移動のみ：目は動くだけで大きさは変わりません。瞳孔の拡大はシェーダーのスライダーで。"),
-                        evenEyeShapes, new[] { L("As authored (can stretch)", "元のまま（伸びることあり）"), L("Scale evenly (mean fit)", "均等に拡大（平均）"), L("Scale evenly (max extent)", "均等に拡大（最大）"), L("Move only (never scale)", "移動のみ（拡大しない）") });
+                        dropBackFaces = EditorGUILayout.ToggleLeft(GC("look.dropBack"), dropBackFaces);
+                    evenEyeShapes = EditorGUILayout.Popup(GC("look.shapes"),
+                        evenEyeShapes, new[] { L.Text("look.shapes.authored"), L.Text("look.shapes.mean"), L.Text("look.shapes.max"), L.Text("look.shapes.move") });
                     if (evenEyeShapes != 0 && previewOn)
-                        GUILayout.Label(L("The preview keeps the blendshapes as authored. The evening is applied when you install.",
-                                          "プレビューではブレンドシェイプは元のままです。均等化はインストール時に適用されます。"), _hint);
+                        GUILayout.Label(L.Text("look.shapes.previewNote"), _hint);
                 }
                 if (EditorGUI.EndChangeCheck()) { SaveSettings(); MarkPreviewDirty(); }
                 EditorGUI.indentLevel--;
             }
 
-            showPresets = EditorGUILayout.Foldout(showPresets, L("Presets", "プリセット"), true);
+            showPresets = EditorGUILayout.Foldout(showPresets, L.Text("presets"), true);
             if (showPresets) { EditorGUI.indentLevel++; DrawPresetBar(); EditorGUI.indentLevel--; }
         }
 
@@ -608,19 +579,17 @@ namespace DocMe.EyeInstaller
         {
             if (!HasInstall()) { GoTo(Page.Avatar); return; }
 
-            GUILayout.Label(L("✓ Eyes installed", "✓ 目を入れました"), _ok);
-            GUILayout.Label(L("Look at the avatar in the Scene view. Everything below is optional.", "シーンでアバターを確認してください。以下はすべて任意です。"), _hint);
+            GUILayout.Label(L.Text("done.installed"), _ok);
+            GUILayout.Label(L.Text("done.about"), _hint);
 
             bool missing = DocMeReapply.HasMissingMesh(avatar);
             if (missing || DocMeReapply.IsStale(avatar))
             {
                 if (missing)
-                    EditorGUILayout.HelpBox(L("The generated eye mesh is gone, so the face shows nothing. This happens when a copy of this avatar was reverted or the file was deleted. Rebuild puts it back from the saved settings.",
-                                              "生成した目のメッシュが見つからないため、顔が表示されません。このアバターの複製で元に戻した場合やファイルを削除した場合に起こります。保存した設定から作り直せます。"), MessageType.Error);
+                    EditorGUILayout.HelpBox(L.Text("done.meshMissing"), MessageType.Error);
                 else
-                    EditorGUILayout.HelpBox(L("The model file changed since the eyes were installed. Re-apply to rebuild them on the new mesh.",
-                                              "目を入れた後にモデルファイルが変わりました。新しいメッシュに作り直すには再適用してください。"), MessageType.Warning);
-                if (GUILayout.Button(missing ? L("Rebuild from the saved settings", "保存した設定から作り直す") : L("Re-apply to the updated model", "更新されたモデルに再適用"), GUILayout.Height(24)))
+                    EditorGUILayout.HelpBox(L.Text("done.modelChanged"), MessageType.Warning);
+                if (GUILayout.Button(missing ? L.Text("done.rebuild") : L.Text("done.reapply"), GUILayout.Height(24)))
                 {
                     log = DocMeReapply.ReapplyAll(avatar);
                     seeds.Clear(); previews.Clear(); showOriginal = false;
@@ -631,97 +600,87 @@ namespace DocMe.EyeInstaller
             EditorGUILayout.Space(6);
             using (new EditorGUILayout.VerticalScope(_box))
             {
-                GUILayout.Label(L("Something still showing over the eye?", "目の上にまだ何か見えていますか？"), EditorStyles.boldLabel);
-                GUILayout.Label(L("Highlights or decorations from the old eye can sit on top of the new one. Select them in the Scene view, then press Hide.",
-                                  "元の目のハイライトや飾りが新しい目の上に残ることがあります。シーンで選んでから「隠す」を押してください。"), _hint);
+                GUILayout.Label(L.Text("done.hide.title"), EditorStyles.boldLabel);
+                GUILayout.Label(L.Text("done.hide.about"), _hint);
                 bool hiding = pickMode == HideKey;
                 int hidden = HiddenCount(), selected = SelectedCount();
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     GUI.backgroundColor = hiding ? new Color(0.6f, 0.8f, 1f) : Color.white;
-                    if (GUILayout.Button(GC(hiding ? "Selecting… press to stop" : "Select parts to hide", hiding ? "選択中… 押すと終了" : "隠す部分を選択",
-                                            "Click parts in the Scene view to select them; click a selected part again to unselect it.",
-                                            "シーンで部分をクリックして選びます。選んだ部分をもう一度クリックすると外れます。"), GUILayout.Height(26)))
+                    if (GUILayout.Button(HGC(hiding ? "hide.selecting" : "hide.select", "hide.select.tip"), GUILayout.Height(26)))
                     { pickMode = hiding ? null : HideKey; SceneView.RepaintAll(); }
                     GUI.backgroundColor = selected > 0 ? new Color(0.6f, 0.9f, 0.65f) : Color.white;
                     using (new EditorGUI.DisabledScope(selected == 0))
-                        if (GUILayout.Button(GC(selected == 0 ? "Hide selected parts" : selected == 1 ? "Hide 1 selected part" : $"Hide {selected} selected parts", selected == 0 ? "選択した部分を隠す" : $"選択した {selected} 箇所を隠す",
-                                                "Hides all selected parts in one go. Enter in the Scene view does the same.",
-                                                "選択した部分をまとめて隠します。シーンで Enter を押しても同じです。"), GUILayout.Height(26), GUILayout.Width(160)))
+                        if (GUILayout.Button(new GUIContent(selected == 0 ? HideL.Text("hide.button.none") : HideL.Count(selected, "hide.button", selected), HideL.Tip("hide.button.tip")), GUILayout.Height(26), GUILayout.Width(160)))
                             HideSelected();
                     GUI.backgroundColor = Color.white;
                 }
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     using (new EditorGUI.DisabledScope(hidden == 0 && selected == 0))
-                        if (GUILayout.Button(GC("Undo last", "最後を取り消す",
-                                                "Takes back the last selected part, or the last hidden part when nothing is selected.",
-                                                "最後に選んだ部分を外します。何も選んでいなければ最後に隠した部分を戻します。"), GUILayout.Width(100), GUILayout.Height(22)))
+                        if (GUILayout.Button(HGC("hide.undo"), GUILayout.Width(100), GUILayout.Height(22)))
                             UndoLastHide();
                     using (new EditorGUI.DisabledScope(hidden == 0))
-                        if (GUILayout.Button(GC("Show all", "全て表示", "Brings every hidden part back.", "隠した部分をすべて戻します。"), GUILayout.Width(90), GUILayout.Height(22)))
+                        if (GUILayout.Button(HGC("hide.showAll"), GUILayout.Width(90), GUILayout.Height(22)))
                             ClearHides();
                     GUILayout.FlexibleSpace();
                 }
-                if (selected > 0) GUILayout.Label(L(selected == 1 ? "1 part selected. Press Hide." : $"{selected} parts selected. Press Hide.", $"{selected} 箇所を選択中。「隠す」を押してください。"), _sel);
-                if (hidden > 0) GUILayout.Label(L(hidden == 1 ? "1 part hidden." : $"{hidden} parts hidden.", $"{hidden} 箇所を隠しました。"), _ok);
+                if (selected > 0) GUILayout.Label(HideL.Count(selected, "hide.selected", selected), _sel);
+                if (hidden > 0) GUILayout.Label(HideL.Count(hidden, "hide.hidden", hidden), _ok);
             }
 
             EditorGUILayout.Space(4);
             using (new EditorGUILayout.VerticalScope(_box))
             {
-                GUILayout.Label(L("Fine-tune", "微調整"), EditorStyles.boldLabel);
+                GUILayout.Label(L.Text("done.fineTune"), EditorStyles.boldLabel);
                 EditorGUI.BeginChangeCheck();
                 if (lockAspect)
                 {
-                    float s = EditorGUILayout.Slider(GC("Size", "サイズ"), widthFactor, 0.3f, 3f);
+                    float s = EditorGUILayout.Slider(GC("look.size"), widthFactor, 0.3f, 3f);
                     widthFactor = heightFactor = s;
                 }
                 else
                 {
-                    widthFactor  = EditorGUILayout.Slider(GC("Width", "幅"), widthFactor, 0.3f, 3f);
-                    heightFactor = EditorGUILayout.Slider(GC("Height", "高さ"), heightFactor, 0.3f, 3f);
+                    widthFactor  = EditorGUILayout.Slider(GC("look.width"), widthFactor, 0.3f, 3f);
+                    heightFactor = EditorGUILayout.Slider(GC("look.height"), heightFactor, 0.3f, 3f);
                 }
-                depthOffset      = EditorGUILayout.Slider(GC("Depth", "前後"), depthOffset, -0.02f, 0.02f);
-                verticalOffset   = EditorGUILayout.Slider(GC("Up / down", "上下"), verticalOffset, -0.02f, 0.02f);
-                horizontalOffset = EditorGUILayout.Slider(GC("Apart / together", "左右"), horizontalOffset, -0.02f, 0.02f);
+                depthOffset      = EditorGUILayout.Slider(GC("look.depth"), depthOffset, -0.02f, 0.02f);
+                verticalOffset   = EditorGUILayout.Slider(GC("look.upDown"), verticalOffset, -0.02f, 0.02f);
+                horizontalOffset = EditorGUILayout.Slider(GC("look.apart"), horizontalOffset, -0.02f, 0.02f);
                 bool changed = EditorGUI.EndChangeCheck();
                 if (changed) SaveSettings();
                 if (changed && !deformWithFace) UpdateFit();
                 if (deformWithFace)
                 {
-                    GUILayout.Label(L("Reused eyes are rebuilt when you press Apply.", "再利用した目は「反映」を押すと作り直されます。"), _hint);
-                    if (GUILayout.Button(L("Apply", "反映"), GUILayout.Height(24))) Install();
+                    GUILayout.Label(L.Text("done.reusedNote"), _hint);
+                    if (GUILayout.Button(L.Text("done.apply"), GUILayout.Height(24))) Install();
                 }
 
                 EditorGUI.BeginChangeCheck();
-                showOriginal = EditorGUILayout.ToggleLeft(GC("Show the original eyes for comparison", "比較のため元の目を表示"), showOriginal);
+                showOriginal = EditorGUILayout.ToggleLeft(GC("done.showOriginal"), showOriginal);
                 if (EditorGUI.EndChangeCheck()) SetOriginalEyesVisible(showOriginal);
             }
 
-            advancedDone = EditorGUILayout.Foldout(advancedDone, L("Advanced", "詳細設定"), true);
+            advancedDone = EditorGUILayout.Foldout(advancedDone, L.Text("advanced"), true);
             if (advancedDone)
             {
                 EditorGUI.indentLevel++;
                 EditorGUI.BeginChangeCheck();
-                hides.deleteGeometry = EditorGUILayout.ToggleLeft(GC("Delete hidden parts instead of folding them", "隠す部分を畳まずに削除",
-                    "Deleting stops other blendshapes from pulling them back into view.", "削除すると他のブレンドシェイプで再表示されなくなります。"), hides.deleteGeometry);
+                hides.deleteGeometry = EditorGUILayout.ToggleLeft(HGC("hide.delete"), hides.deleteGeometry);
                 using (new EditorGUI.DisabledScope(hides.deleteGeometry))
-                    hides.sinkIntoHead = EditorGUILayout.ToggleLeft(GC("Fold hidden parts into the head", "隠す部分を頭の中に畳み込む"), hides.sinkIntoHead);
-                if (EditorGUI.EndChangeCheck()) { SaveSettings(); if (hides.Count > 0) Busy("Updating…", "更新中…", hides.Reapply); }
+                    hides.sinkIntoHead = EditorGUILayout.ToggleLeft(HGC("hide.fold"), hides.sinkIntoHead);
+                if (EditorGUI.EndChangeCheck()) { SaveSettings(); if (hides.Count > 0) Busy(HideL.Text("hide.busy.updating"), hides.Reapply); }
 
-                DocMeReapply.AutoEnabled = EditorGUILayout.ToggleLeft(GC("Rebuild automatically when the model is reimported", "モデルの再インポート時に自動で作り直す",
-                    "Edit the FBX in Blender and reimport: the eyes and hidden parts come back on the new mesh.",
-                    "Blender で FBX を編集して再インポートすると、目と隠した部分が新しいメッシュに戻ります。"), DocMeReapply.AutoEnabled);
+                DocMeReapply.AutoEnabled = EditorGUILayout.ToggleLeft(HGC("hide.autoRebuild"), DocMeReapply.AutoEnabled);
 
                 EditorGUILayout.Space(6);
                 GUI.backgroundColor = new Color(0.92f, 0.55f, 0.55f);
-                if (GUILayout.Button(L("Remove the eyes (back to the original)", "目を削除（元に戻す）"), GUILayout.Height(24)))
+                if (GUILayout.Button(L.Text("done.remove"), GUILayout.Height(24)))
                 {
                     HideIslandsCore.Revert(avatar);
                     EyeInstallerCore.Revert(avatar);
                     hides.Forget(); previews.Clear(); showOriginal = false; pickMode = null;
-                    log = L("Removed. The avatar is back to its original eyes.", "削除しました。アバターは元の目に戻っています。");
+                    log = L.Text("done.removed");
                     GoTo(Page.Look);
                 }
                 GUI.backgroundColor = Color.white;
@@ -733,9 +692,9 @@ namespace DocMe.EyeInstaller
         int SelectedCount() => hides.PendingCount;
 
         /// <summary>Runs a rebuild behind a progress bar: every rebuild writes the whole mesh asset.</summary>
-        void Busy(string en, string jp, System.Action work)
+        void Busy(string text, System.Action work)
         {
-            EditorUtility.DisplayProgressBar("DocMe Eyes", L(en, jp), 0.4f);
+            EditorUtility.DisplayProgressBar(L.Text("window.title"), text, 0.4f);
             try { work(); }
             finally { EditorUtility.ClearProgressBar(); previews.Clear(); Repaint(); SceneView.RepaintAll(); }
         }
@@ -743,18 +702,18 @@ namespace DocMe.EyeInstaller
         void UndoLastHide()
         {
             if (hides.PendingCount > 0) hides.UndoLast();
-            else Busy("Updating…", "更新中…", hides.UndoLast);
+            else Busy(HideL.Text("hide.busy.updating"), hides.UndoLast);
         }
 
-        void ClearHides() => Busy("Showing all…", "すべて表示中…", hides.Clear);
+        void ClearHides() => Busy(HideL.Text("hide.busy.showAll"), hides.Clear);
 
         void HideSelected()
         {
             int n = hides.PendingCount;
             if (n == 0) return;
             int done = 0;
-            Busy(n == 1 ? "Hiding 1 part…" : $"Hiding {n} parts…", $"{n} 箇所を隠しています…", () => done = hides.HideSelected());
-            log = done == n ? "" : L($"{n - done} of the selected parts could not be hidden.", $"選択した {n - done} 箇所は隠せませんでした。");
+            Busy(HideL.Count(n, "hide.busy.hiding", n), () => done = hides.HideSelected());
+            log = done == n ? "" : HideL.Text("hide.notHidden", n - done);
         }
 
         void AddHide(IslandPick seed)
@@ -763,9 +722,9 @@ namespace DocMe.EyeInstaller
             {
                 case HidePickSession.SelectResult.Selected:
                 case HidePickSession.SelectResult.Deselected: log = ""; break;
-                case HidePickSession.SelectResult.Protected: log = L("That is the new eye itself, so it stays.", "それは新しい目なので隠しません。"); break;
-                case HidePickSession.SelectResult.TooBig: log = L("That part is too big to hide. Click a small piece such as a highlight.", "その部分は大きすぎて隠せません。ハイライトなど小さな部分をクリックしてください。"); break;
-                default: log = L("That mesh cannot be read.", "そのメッシュは読み取れません。"); break;
+                case HidePickSession.SelectResult.Protected: log = L.Text("done.hide.isEye"); break;
+                case HidePickSession.SelectResult.TooBig: log = HideL.Text("hide.tooBig"); break;
+                default: log = HideL.Text("hide.unreadable"); break;
             }
         }
 
@@ -826,7 +785,7 @@ namespace DocMe.EyeInstaller
             EndPreview();
             if (!previewOn || avatar == null || material == null) return;
 
-            EditorUtility.DisplayProgressBar("DocMe Eyes", L("Building preview…", "プレビューを作成中…"), 0.4f);
+            EditorUtility.DisplayProgressBar("DocMe Eyes", L.Text("look.preview.building"), 0.4f);
             try
             {
                 // An existing install is parked (originals shown, placed eyes off) so the preview builds from the real mesh.
@@ -898,17 +857,16 @@ namespace DocMe.EyeInstaller
             if (detected != null)
                 foreach (var d in detected)
                 {
-                    string src = d.HasSeed ? L($"{d.seeds.Count} click(s)", $"クリック {d.seeds.Count} 回") : L("auto", "自動");
+                    string src = d.HasSeed ? L.Count(d.seeds.Count, "report.clicks", d.seeds.Count) : L.Text("report.auto");
                     sb.AppendLine($"[{d.label}] {src}");
                     if (d.HasSeed)
                         foreach (var s in d.seeds)
                             if (s.renderer == null || !s.renderer.transform.IsChildOf(avatar.transform))
-                                sb.AppendLine(L($"  ⚠ a click landed on '{(s.renderer ? s.renderer.transform.root.name : "a deleted object")}', not on this avatar. Use auto again and re-click.",
-                                                $"  ⚠ クリックがこのアバター外（'{(s.renderer ? s.renderer.transform.root.name : "削除済み")}'）にあります。自動検出に戻してから選び直してください。"));
+                                sb.AppendLine("  " + L.Text("report.clickElsewhere", s.renderer ? s.renderer.transform.root.name : L.Text("report.deletedObject")));
                 }
 
             var marker = avatar != null ? avatar.GetComponent<DocMeEyeInstall>() : null;
-            if (marker == null) return sb.Append(L("⚠ Nothing was installed.", "⚠ 何もインストールされませんでした。")).ToString();
+            if (marker == null) return sb.Append(L.Text("report.nothing")).ToString();
 
             foreach (var h in marker.hiddenRenderers)
             {
@@ -920,13 +878,13 @@ namespace DocMe.EyeInstaller
                 int after = h.modifiedMesh ? h.modifiedMesh.triangles.Length / 3 : 0;
                 int eyeTris = h.reshaded && h.modifiedMesh ? h.modifiedMesh.GetTriangles(h.modifiedMesh.subMeshCount - 1).Length / 3 : 0;
                 sb.AppendLine(h.reshaded
-                    ? L($"Changed '{where}': new eye {eyeTris} triangles, {before - after} removed.", $"'{where}' を変更：新しい目 {eyeTris} ポリゴン、削除 {before - after} ポリゴン。")
-                    : L($"Changed '{where}': original eyes hidden ({before - after} triangles removed).", $"'{where}' を変更：元の目を非表示（削除 {before - after} ポリゴン）。"));
+                    ? L.Text("report.reshaded", where, eyeTris, before - after)
+                    : L.Text("report.hidden", where, before - after));
                 if (!h.renderer.gameObject.activeInHierarchy)
-                    sb.AppendLine(L("  ⚠ that mesh is hidden in the scene, so you won't see the change.", "  ⚠ このメッシュはシーンで非表示のため、変化が見えません。"));
+                    sb.AppendLine("  " + L.Text("report.meshHidden"));
             }
             if (marker.createdEyes.Count > 0)
-                sb.AppendLine(L($"Placed {marker.createdEyes.Count} eye {(marker.createdEyes.Count == 1 ? "object" : "objects")}.", $"目のオブジェクトを {marker.createdEyes.Count} 個配置しました。"));
+                sb.AppendLine(L.Count(marker.createdEyes.Count, "report.placed", marker.createdEyes.Count));
             return sb.ToString().TrimEnd();
         }
 
@@ -999,12 +957,12 @@ namespace DocMe.EyeInstaller
             using (new EditorGUILayout.HorizontalScope())
             {
                 EditorGUI.BeginChangeCheck();
-                preset = (DocMeEyePreset)EditorGUILayout.ObjectField(GC("Preset", "プリセット", "Saved settings. Choosing one loads it.", "保存した設定。選ぶと読み込まれます。"),
+                preset = (DocMeEyePreset)EditorGUILayout.ObjectField(GC("preset.field"),
                     preset, typeof(DocMeEyePreset), false);
                 if (EditorGUI.EndChangeCheck() && preset != null) LoadPreset(preset);
                 using (new EditorGUI.DisabledScope(preset == null))
-                    if (GUILayout.Button(GC("Save", "保存", "Overwrite this preset with the current settings.", "現在の設定でこのプリセットを上書きします。"), GUILayout.Width(56))) StoreInto(preset);
-                if (GUILayout.Button(GC("New…", "新規…", "Save the current settings as a new preset.", "現在の設定を新しいプリセットとして保存します。"), GUILayout.Width(56))) SaveAsNewPreset();
+                    if (GUILayout.Button(GC("preset.save"), GUILayout.Width(56))) StoreInto(preset);
+                if (GUILayout.Button(GC("preset.new"), GUILayout.Width(56))) SaveAsNewPreset();
             }
         }
 
@@ -1021,7 +979,7 @@ namespace DocMe.EyeInstaller
             rollMode = p.rollMode == EyeInstallerCore.RollIndependent ? EyeInstallerCore.RollIndependent : EyeInstallerCore.RollMirror;
             SaveSettings();
             MarkPreviewDirty();
-            log = L($"Loaded preset '{p.name}'.", $"プリセット「{p.name}」を読み込みました。");
+            log = L.Text("preset.loaded", p.name);
         }
 
         void StoreInto(DocMeEyePreset p)
@@ -1036,14 +994,14 @@ namespace DocMe.EyeInstaller
             p.rollRightOffset = rollRightOffset; p.rollMode = rollMode; p.angleOut = angleOut; p.angleUp = angleUp;
             EditorUtility.SetDirty(p);
             AssetDatabase.SaveAssets();
-            log = L($"Saved preset '{p.name}'.", $"プリセット「{p.name}」を保存しました。");
+            log = L.Text("preset.saved", p.name);
         }
 
         void SaveAsNewPreset()
         {
             string suggested = avatar != null ? avatar.name : "DocMe Eye Preset";
-            string path = EditorUtility.SaveFilePanelInProject(L("Save Eye Preset", "プリセットを保存"), suggested, "asset",
-                L("Save the current settings as a reusable preset.", "現在の設定をプリセットとして保存します。"));
+            string path = EditorUtility.SaveFilePanelInProject(L.Text("preset.dialog.title"), suggested, "asset",
+                L.Text("preset.dialog.message"));
             if (string.IsNullOrEmpty(path)) return;
             var p = ScriptableObject.CreateInstance<DocMeEyePreset>();
             AssetDatabase.CreateAsset(p, path);
@@ -1100,13 +1058,11 @@ namespace DocMe.EyeInstaller
             Handles.BeginGUI();
             string overlay;
             if (pickMode == HideKey)
-                overlay = L($"Click parts to select them ({SelectedCount()} selected, {HiddenCount()} hidden). Enter hides them, Esc stops, Ctrl+Z takes back the last.",
-                            $"隠す部分をクリックして選択（{SelectedCount()} 選択、{HiddenCount()} 非表示）。Enter で隠す、Esc で終了、Ctrl+Z で最後を取り消し。");
+                overlay = HideL.Text("hide.overlay", SelectedCount(), HiddenCount());
             else
             {
                 int picked = seeds.TryGetValue(pickMode, out var cur) ? cur.Count : 0;
-                overlay = L($"Click the {PickName(pickMode)} ({picked} so far). Esc when done, Ctrl+Z undoes the last click.",
-                            $"{PickName(pickMode)}をクリック（{picked} 個）。終わったら Esc、Ctrl+Z で最後のクリックを取り消し。");
+                overlay = L.Text(pickMode == "L" ? "overlay.pick.left" : "overlay.pick.right", picked);
             }
             GUI.Label(new Rect(8, 8, 620, 22), overlay);
             Handles.EndGUI();

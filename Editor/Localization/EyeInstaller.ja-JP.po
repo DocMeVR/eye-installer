@@ -1,0 +1,545 @@
+msgid ""
+msgstr ""
+"Language: ja-JP\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"X-DocMe-Reviewed: no\n"
+
+#. en: DocMe Eyes
+msgid "window.title"
+msgstr "DocMe アイ"
+
+#. en: 1 Avatar
+msgid "step.avatar"
+msgstr "1 アバター"
+
+#. en: 2 Eyes
+msgid "step.eyes"
+msgstr "2 目"
+
+#. en: 3 Look
+msgid "step.look"
+msgstr "3 見た目"
+
+#. en: 4 Done
+msgid "step.done"
+msgstr "4 完了"
+
+#. en: ◀ Back
+msgid "nav.back"
+msgstr "◀ 戻る"
+
+#. en: Next ▶
+msgid "nav.next"
+msgstr "次へ ▶"
+
+#. en: Looks right ▶
+msgid "nav.looksRight"
+msgstr "これで合っている ▶"
+
+#. en: Apply changes
+msgid "nav.applyChanges"
+msgstr "変更を反映"
+
+#. en: Install eyes
+msgid "nav.install"
+msgstr "目をインストール"
+
+#. en: Another avatar
+msgid "nav.anotherAvatar"
+msgstr "別のアバター"
+
+#. en: Details
+msgid "details"
+msgstr "詳細"
+
+#. en: (nothing yet)
+msgid "details.empty"
+msgstr "（まだありません）"
+
+#. en: Which avatar gets the new eyes?
+msgid "avatar.title"
+msgstr "どのアバターに目を入れますか？"
+
+#. en: Drag your avatar from the Hierarchy into the field below. If it is selected already, it is picked up for you.
+msgid "avatar.intro"
+msgstr "Hierarchy からアバターを下の欄にドラッグしてください。選択中なら自動で入ります。"
+
+#. en: Avatar
+msgid "avatar.field"
+msgstr "アバター"
+
+#. en: Use selected: {0}
+msgid "avatar.useSelected"
+msgstr "選択中の「{0}」を使う"
+
+#. en: This avatar already has DocMe eyes. Step 4 lets you adjust or remove them.
+msgid "avatar.hasEyes"
+msgstr "このアバターには DocMe の目が入っています。ステップ4で調整や削除ができます。"
+
+#. en: ⚠ No eye bones found on this avatar. Make sure the Animator is humanoid with LeftEye and RightEye mapped.
+msgid "eyes.noBones"
+msgstr "⚠ 目のボーンが見つかりません。Animator が Humanoid で LeftEye / RightEye が設定されているか確認してください。"
+
+#. en: ✓ Found both eyes on '{0}'.
+msgid "eyes.foundBoth"
+msgstr "✓ 両目を「{0}」で見つけました。"
+
+#. en: ⚠ Found only the left eye. Fix the other one in step 2.
+msgid "eyes.foundOnlyLeft"
+msgstr "⚠ 左目だけ見つかりました。ステップ2でもう片方を直してください。"
+
+#. en: ⚠ Found only the right eye. Fix the other one in step 2.
+msgid "eyes.foundOnlyRight"
+msgstr "⚠ 右目だけ見つかりました。ステップ2でもう片方を直してください。"
+
+#. en: ⚠ Eye bones found, but not the eye surface. Click the eyes in step 2.
+msgid "eyes.noSurface"
+msgstr "⚠ 目のボーンはありますが目の面が見つかりません。ステップ2で目をクリックしてください。"
+
+#. en: Are these the eyes?
+msgid "eyes.title"
+msgstr "ここが目で合っていますか？"
+
+#. en: The found eyes are tinted in the Scene view: blue = left, orange = right. If a tint sits on the wrong spot or is missing, press Fix and click the iris.
+msgid "eyes.about"
+msgstr "見つけた目はシーンに色が付きます（青＝左、オレンジ＝右）。場所が違う、または色が無い場合は「直す」を押して目（虹彩）をクリックしてください。"
+
+#. en: Click the iris in the Scene view. Each click adds one piece; press Esc or the button again when done.
+msgid "eyes.pickHelp"
+msgstr "シーンで虹彩をクリックしてください。クリックごとに1つ追加されます。終わったら Esc か同じボタンを押します。"
+
+#. en: Undo last click
+msgid "eyes.undoClick"
+msgstr "最後のクリックを取り消す"
+
+#. en: Use auto again
+msgid "eyes.useAuto"
+msgstr "自動検出に戻す"
+
+#. en: Advanced
+msgid "advanced"
+msgstr "詳細設定"
+
+#. en: Eyes are on this mesh
+msgid "eyes.mesh"
+msgstr "目があるメッシュ"
+
+#. en: Leave empty to search every body mesh. Set it when the eyes sit on a specific mesh.
+msgid "eyes.mesh.tip"
+msgstr "空欄なら全てのボディメッシュを探します。目が特定のメッシュにある場合に指定します。"
+
+#. en: Clicking left… ({0})
+msgid "eyes.pick.left.active"
+msgstr "左目を選択中… ({0})"
+
+#. en: Clicking right… ({0})
+msgid "eyes.pick.right.active"
+msgstr "右目を選択中… ({0})"
+
+#. en: left ✓ {0} picked
+msgid "eyes.pick.left.picked"
+msgstr "左目 ✓ {0}"
+
+#. en: right ✓ {0} picked
+msgid "eyes.pick.right.picked"
+msgstr "右目 ✓ {0}"
+
+#. en: Fix left eye
+msgid "eyes.pick.left.fix"
+msgstr "左目を直す"
+
+#. en: Fix right eye
+msgid "eyes.pick.right.fix"
+msgstr "右目を直す"
+
+#. en: How should the new eyes look?
+msgid "look.title"
+msgstr "新しい目の見た目"
+
+#. en: Preview in the Scene view
+msgid "look.preview"
+msgstr "シーンでプレビュー"
+
+#. en: Shows the result on the avatar as you change settings. Nothing is saved until you press Install.
+msgid "look.preview.tip"
+msgstr "設定を変えるたびに結果をアバターに表示します。「インストール」を押すまで何も保存されません。"
+
+#. en: Updating preview…
+msgid "look.preview.updating"
+msgstr "プレビューを更新中…"
+
+#. en: Preview shown
+msgid "look.preview.shown"
+msgstr "プレビュー表示中"
+
+#. en: Eye material
+msgid "look.material"
+msgstr "目のマテリアル"
+
+#. en: One of the DocMe eye materials. You can swap it later on the renderer.
+msgid "look.material.tip"
+msgstr "DocMe の目マテリアル。後からレンダラーで差し替えできます。"
+
+#. en: Pick an eye material to continue.
+msgid "look.material.missing"
+msgstr "目のマテリアルを選んでください。"
+
+#. en: How to build the eye
+msgid "look.build"
+msgstr "目の作り方"
+
+#. en: Flat eye in the socket
+msgid "look.mode.flat"
+msgstr "まぶたの奥に平らな目"
+
+#. en: A new flat eye behind the eyelids, the old one hidden. Works on every avatar.
+msgid "look.mode.flat.about"
+msgstr "まぶたの奥に新しい平らな目を置き、元の目は隠します。どのアバターでも使えます。"
+
+#. en: Reuse the avatar's own eye
+msgid "look.mode.reuse"
+msgstr "アバターの目をそのまま使う"
+
+#. en: The original eye surface gets the new shader, so it still moves with blinks and expressions. Best when the old eye is a flat sheet.
+msgid "look.mode.reuse.about"
+msgstr "元の目の面に新しいシェーダーを当てます。まばたきや表情に合わせて動きます。元の目が平らな場合に向いています。"
+
+#. en: Size
+msgid "look.size"
+msgstr "サイズ"
+
+#. en: 1.0 = same size as the avatar's eye.
+msgid "look.size.tip"
+msgstr "1.0 ＝ 元の目と同じ大きさ。"
+
+#. en: Width
+msgid "look.width"
+msgstr "幅"
+
+#. en: Height
+msgid "look.height"
+msgstr "高さ"
+
+#. en: Same width and height
+msgid "look.sameSize"
+msgstr "幅と高さを同じにする"
+
+#. en: Depth
+msgid "look.depth"
+msgstr "前後"
+
+#. en: Forward (+) or deeper (−), in metres.
+msgid "look.depth.tip"
+msgstr "前へ(＋)／奥へ(−)、メートル。"
+
+#. en: Up / down
+msgid "look.upDown"
+msgstr "上下"
+
+#. en: Apart / together
+msgid "look.apart"
+msgstr "左右"
+
+#. en: Apart (+) or toward the nose (−).
+msgid "look.apart.tip"
+msgstr "外へ(＋)／鼻側へ(−)。"
+
+#. en: Angle outward
+msgid "look.angleOut"
+msgstr "外向きの角度"
+
+#. en: Turns each eye toward its own outer side, in degrees. For faces whose eyes sit on the sides, so they do not thin out when seen from the side.
+msgid "look.angleOut.tip"
+msgstr "それぞれの目を外側へ向けます（度）。目が顔の横寄りにあるアバターで、横から見ても細くならないように。"
+
+#. en: Tilt up / down
+msgid "look.tilt"
+msgstr "上下の傾き"
+
+#. en: Tilts both eyes up (+) or down (−), in degrees.
+msgid "look.tilt.tip"
+msgstr "両目を上(＋)／下(−)へ傾けます（度）。"
+
+#. en: Roll
+msgid "look.roll"
+msgstr "回転"
+
+#. en: Spins the eye around its view axis, in degrees.
+msgid "look.roll.tip"
+msgstr "目を視線の軸まわりに回します（度）。"
+
+#. en: Roll (left eye)
+msgid "look.roll.left"
+msgstr "回転（左目）"
+
+#. en: Mirror the roll on the right eye
+msgid "look.mirrorRoll"
+msgstr "右目は鏡写しに回す"
+
+#. en: On: the right eye rolls the opposite way, so both eyes tilt alike. Off: the right eye gets its own roll.
+msgid "look.mirrorRoll.tip"
+msgstr "オン：右目は逆向きに回り、両目が同じ傾きになります。オフ：右目は別の値で回します。"
+
+#. en: Roll (right eye)
+msgid "look.roll.right"
+msgstr "回転（右目）"
+
+#. en: Custom eye mesh
+msgid "look.customMesh"
+msgstr "独自の目メッシュ"
+
+#. en: Empty = a generated flat quad. Use your own mesh if you have one.
+msgid "look.customMesh.tip"
+msgstr "空欄なら平面を自動生成します。独自メッシュがあれば指定してください。"
+
+#. en: Place behind the eyelids
+msgid "look.behindLids"
+msgstr "まぶたの内側に配置"
+
+#. en: Off puts the eye on the face surface instead of at the iris depth.
+msgid "look.behindLids.tip"
+msgstr "オフにすると目を顔の表面に置きます。"
+
+#. en: Hide the original eyes
+msgid "look.hideOriginal"
+msgstr "元の目を隠す"
+
+#. en: Delete them instead of folding them away
+msgid "look.deleteOriginal"
+msgstr "畳まずに削除する"
+
+#. en: Folding uses a blendshape and can be undone. Deleting removes the triangles, which stops other blendshapes from pulling them back into view.
+msgid "look.deleteOriginal.tip"
+msgstr "畳む方法はブレンドシェイプで、元に戻せます。削除はポリゴンを消すので、他のブレンドシェイプで再表示されることがありません。"
+
+#. en: Fold them into the head
+msgid "look.foldIntoHead"
+msgstr "頭の中に畳み込む"
+
+#. en: Flatten the eye
+msgid "look.flatten"
+msgstr "目を平らにする"
+
+#. en: Projects the eye onto a flat plane facing forward.
+msgid "look.flatten.tip"
+msgstr "目を正面向きの平面にそろえます。"
+
+#. en: Remove the back half of a round eye
+msgid "look.dropBack"
+msgstr "丸い目の裏半分を削除"
+
+#. en: A ball-shaped eye would fold onto itself when flattened. Turn off if the eye is already flat.
+msgid "look.dropBack.tip"
+msgstr "球状の目は平らにすると重なります。元から平らな目ならオフにしてください。"
+
+#. en: Blendshapes and the eye
+msgid "look.shapes"
+msgstr "ブレンドシェイプと目"
+
+#. en: Rewrites the avatar's blendshapes on the new eye. As authored: the eye stretches with the vertices. Scale evenly: the shape moves and scales the whole eye as one flat sheet. Move only: the shape moves the eye but never changes its size; use the shader's pupil slider for dilation.
+msgid "look.shapes.tip"
+msgstr "新しい目に対するブレンドシェイプの扱い。元のまま：頂点と一緒に目が伸びます。均等に拡大：目全体を平らなまま動かして拡大します。移動のみ：目は動くだけで大きさは変わりません。瞳孔の拡大はシェーダーのスライダーで。"
+
+#. en: As authored (can stretch)
+msgid "look.shapes.authored"
+msgstr "元のまま（伸びることあり）"
+
+#. en: Scale evenly (mean fit)
+msgid "look.shapes.mean"
+msgstr "均等に拡大（平均）"
+
+#. en: Scale evenly (max extent)
+msgid "look.shapes.max"
+msgstr "均等に拡大（最大）"
+
+#. en: Move only (never scale)
+msgid "look.shapes.move"
+msgstr "移動のみ（拡大しない）"
+
+#. en: The preview keeps the blendshapes as authored. The evening is applied when you install.
+msgid "look.shapes.previewNote"
+msgstr "プレビューではブレンドシェイプは元のままです。均等化はインストール時に適用されます。"
+
+#. en: Presets
+msgid "presets"
+msgstr "プリセット"
+
+#. en: ✓ Eyes installed
+msgid "done.installed"
+msgstr "✓ 目を入れました"
+
+#. en: Look at the avatar in the Scene view. Everything below is optional.
+msgid "done.about"
+msgstr "シーンでアバターを確認してください。以下はすべて任意です。"
+
+#. en: The generated eye mesh is gone, so the face shows nothing. This happens when a copy of this avatar was reverted or the file was deleted. Rebuild puts it back from the saved settings.
+msgid "done.meshMissing"
+msgstr "生成した目のメッシュが見つからないため、顔が表示されません。このアバターの複製で元に戻した場合やファイルを削除した場合に起こります。保存した設定から作り直せます。"
+
+#. en: The model file changed since the eyes were installed. Re-apply to rebuild them on the new mesh.
+msgid "done.modelChanged"
+msgstr "目を入れた後にモデルファイルが変わりました。新しいメッシュに作り直すには再適用してください。"
+
+#. en: Rebuild from the saved settings
+msgid "done.rebuild"
+msgstr "保存した設定から作り直す"
+
+#. en: Re-apply to the updated model
+msgid "done.reapply"
+msgstr "更新されたモデルに再適用"
+
+#. en: Something still showing over the eye?
+msgid "done.hide.title"
+msgstr "目の上にまだ何か見えていますか？"
+
+#. en: Highlights or decorations from the old eye can sit on top of the new one. Select them in the Scene view, then press Hide.
+msgid "done.hide.about"
+msgstr "元の目のハイライトや飾りが新しい目の上に残ることがあります。シーンで選んでから「隠す」を押してください。"
+
+#. en: Fine-tune
+msgid "done.fineTune"
+msgstr "微調整"
+
+#. en: Reused eyes are rebuilt when you press Apply.
+msgid "done.reusedNote"
+msgstr "再利用した目は「反映」を押すと作り直されます。"
+
+#. en: Apply
+msgid "done.apply"
+msgstr "反映"
+
+#. en: Show the original eyes for comparison
+msgid "done.showOriginal"
+msgstr "比較のため元の目を表示"
+
+#. en: Remove the eyes (back to the original)
+msgid "done.remove"
+msgstr "目を削除（元に戻す）"
+
+#. en: Removed. The avatar is back to its original eyes.
+msgid "done.removed"
+msgstr "削除しました。アバターは元の目に戻っています。"
+
+#. en: That is the new eye itself, so it stays.
+msgid "done.hide.isEye"
+msgstr "それは新しい目なので隠しません。"
+
+#. en: Building preview…
+msgid "look.preview.building"
+msgstr "プレビューを作成中…"
+
+#. en: {0} clicks
+msgid "report.clicks"
+msgstr "クリック {0} 回"
+
+#. en: 1 click
+msgid "report.clicks.one"
+msgstr "クリック 1 回"
+
+#. en: auto
+msgid "report.auto"
+msgstr "自動"
+
+#. en: ⚠ a click landed on '{0}', not on this avatar. Use auto again and re-click.
+msgid "report.clickElsewhere"
+msgstr "⚠ クリックがこのアバター外（'{0}'）にあります。自動検出に戻してから選び直してください。"
+
+#. en: a deleted object
+msgid "report.deletedObject"
+msgstr "削除済み"
+
+#. en: ⚠ Nothing was installed.
+msgid "report.nothing"
+msgstr "⚠ 何もインストールされませんでした。"
+
+#. en: Changed '{0}': new eye {1} triangles, {2} removed.
+msgid "report.reshaded"
+msgstr "'{0}' を変更：新しい目 {1} ポリゴン、削除 {2} ポリゴン。"
+
+#. en: Changed '{0}': original eyes hidden ({1} triangles removed).
+msgid "report.hidden"
+msgstr "'{0}' を変更：元の目を非表示（削除 {1} ポリゴン）。"
+
+#. en: ⚠ that mesh is hidden in the scene, so you won't see the change.
+msgid "report.meshHidden"
+msgstr "⚠ このメッシュはシーンで非表示のため、変化が見えません。"
+
+#. en: Placed {0} eye objects.
+msgid "report.placed"
+msgstr "目のオブジェクトを {0} 個配置しました。"
+
+#. en: Placed 1 eye object.
+msgid "report.placed.one"
+msgstr "目のオブジェクトを 1 個配置しました。"
+
+#. en: Preset
+msgid "preset.field"
+msgstr "プリセット"
+
+#. en: Saved settings. Choosing one loads it.
+msgid "preset.field.tip"
+msgstr "保存した設定。選ぶと読み込まれます。"
+
+#. en: Save
+msgid "preset.save"
+msgstr "保存"
+
+#. en: Overwrite this preset with the current settings.
+msgid "preset.save.tip"
+msgstr "現在の設定でこのプリセットを上書きします。"
+
+#. en: New…
+msgid "preset.new"
+msgstr "新規…"
+
+#. en: Save the current settings as a new preset.
+msgid "preset.new.tip"
+msgstr "現在の設定を新しいプリセットとして保存します。"
+
+#. en: Loaded preset '{0}'.
+msgid "preset.loaded"
+msgstr "プリセット「{0}」を読み込みました。"
+
+#. en: Saved preset '{0}'.
+msgid "preset.saved"
+msgstr "プリセット「{0}」を保存しました。"
+
+#. en: Save Eye Preset
+msgid "preset.dialog.title"
+msgstr "プリセットを保存"
+
+#. en: Save the current settings as a reusable preset.
+msgid "preset.dialog.message"
+msgstr "現在の設定をプリセットとして保存します。"
+
+#. en: Click the left eye ({0} so far). Esc when done, Ctrl+Z undoes the last click.
+msgid "overlay.pick.left"
+msgstr "左目をクリック（{0} 個）。終わったら Esc、Ctrl+Z で最後のクリックを取り消し。"
+
+#. en: Click the right eye ({0} so far). Esc when done, Ctrl+Z undoes the last click.
+msgid "overlay.pick.right"
+msgstr "右目をクリック（{0} 個）。終わったら Esc、Ctrl+Z で最後のクリックを取り消し。"
+
+#. en: Nothing installed.
+msgid "reapply.nothing"
+msgstr "何も入っていません。"
+
+#. en: ⚠ Installed with an older version that didn't save its settings. Remove the eyes and install them once more, then they re-apply by themselves.
+msgid "reapply.old"
+msgstr "⚠ 設定を保存しない古いバージョンで入れた目です。目を削除してもう一度インストールすると、次から自動で作り直せます。"
+
+#. en: Eyes re-applied.
+msgid "reapply.done"
+msgstr "目を作り直しました。"
+
+#. en: ⚠ Eyes could not be re-applied.
+msgid "reapply.failed"
+msgstr "⚠ 目を作り直せませんでした。"
+
+#. en: ⚠ {0} eye clicks no longer match the mesh and were dropped (auto detection is used where none are left).
+msgid "reapply.dropped"
+msgstr "⚠ 目のクリック {0} 個がメッシュと合わなくなったため外しました（残りが無い目は自動検出を使います）。"
+
+#. en: ⚠ 1 eye click no longer matches the mesh and was dropped (auto detection is used where none are left).
+msgid "reapply.dropped.one"
+msgstr "⚠ 目のクリック 1 個がメッシュと合わなくなったため外しました（残りが無い目は自動検出を使います）。"

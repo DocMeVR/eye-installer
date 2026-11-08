@@ -49,6 +49,10 @@ The tool never changes your model file. It records what it did and rebuilds it w
 
 **Remove the eyes** on the Done page restores the original mesh and deletes the generated files. Generated meshes live in `Assets/DocMe Generated/EyeInstaller`.
 
+## Language
+
+The window shows English or Japanese. It follows your PC's language until you pick one at the top of the window. With an NDMF tool installed (Modular Avatar, AvatarDoc) it shares that tool's language setting.
+
 ## How this was made
 
 The code in this repository was written by AI (Claude, by Anthropic). The idea, the design, every feature, the testing on real avatars and the decisions on how it should behave are mine (DocMe). I planned it and directed the work; the AI typed it out. Bug reports and pull requests are welcome, and anything that gets merged goes through my own review.

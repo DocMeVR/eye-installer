@@ -1,0 +1,409 @@
+msgid ""
+msgstr ""
+"Language: en-US\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "window.title"
+msgstr "DocMe Eyes"
+
+msgid "step.avatar"
+msgstr "1 Avatar"
+
+msgid "step.eyes"
+msgstr "2 Eyes"
+
+msgid "step.look"
+msgstr "3 Look"
+
+msgid "step.done"
+msgstr "4 Done"
+
+msgid "nav.back"
+msgstr "◀ Back"
+
+msgid "nav.next"
+msgstr "Next ▶"
+
+msgid "nav.looksRight"
+msgstr "Looks right ▶"
+
+msgid "nav.applyChanges"
+msgstr "Apply changes"
+
+msgid "nav.install"
+msgstr "Install eyes"
+
+msgid "nav.anotherAvatar"
+msgstr "Another avatar"
+
+msgid "details"
+msgstr "Details"
+
+msgid "details.empty"
+msgstr "(nothing yet)"
+
+msgid "avatar.title"
+msgstr "Which avatar gets the new eyes?"
+
+msgid "avatar.intro"
+msgstr "Drag your avatar from the Hierarchy into the field below. If it is selected already, it is picked up for you."
+
+msgid "avatar.field"
+msgstr "Avatar"
+
+msgid "avatar.useSelected"
+msgstr "Use selected: {0}"
+
+msgid "avatar.hasEyes"
+msgstr "This avatar already has DocMe eyes. Step 4 lets you adjust or remove them."
+
+msgid "eyes.noBones"
+msgstr "⚠ No eye bones found on this avatar. Make sure the Animator is humanoid with LeftEye and RightEye mapped."
+
+msgid "eyes.foundBoth"
+msgstr "✓ Found both eyes on '{0}'."
+
+msgid "eyes.foundOnlyLeft"
+msgstr "⚠ Found only the left eye. Fix the other one in step 2."
+
+msgid "eyes.foundOnlyRight"
+msgstr "⚠ Found only the right eye. Fix the other one in step 2."
+
+msgid "eyes.noSurface"
+msgstr "⚠ Eye bones found, but not the eye surface. Click the eyes in step 2."
+
+msgid "eyes.title"
+msgstr "Are these the eyes?"
+
+msgid "eyes.about"
+msgstr "The found eyes are tinted in the Scene view: blue = left, orange = right. If a tint sits on the wrong spot or is missing, press Fix and click the iris."
+
+msgid "eyes.pickHelp"
+msgstr "Click the iris in the Scene view. Each click adds one piece; press Esc or the button again when done."
+
+msgid "eyes.undoClick"
+msgstr "Undo last click"
+
+msgid "eyes.useAuto"
+msgstr "Use auto again"
+
+msgid "advanced"
+msgstr "Advanced"
+
+msgid "eyes.mesh"
+msgstr "Eyes are on this mesh"
+
+msgid "eyes.mesh.tip"
+msgstr "Leave empty to search every body mesh. Set it when the eyes sit on a specific mesh."
+
+msgid "eyes.pick.left.active"
+msgstr "Clicking left… ({0})"
+
+msgid "eyes.pick.right.active"
+msgstr "Clicking right… ({0})"
+
+msgid "eyes.pick.left.picked"
+msgstr "left ✓ {0} picked"
+
+msgid "eyes.pick.right.picked"
+msgstr "right ✓ {0} picked"
+
+msgid "eyes.pick.left.fix"
+msgstr "Fix left eye"
+
+msgid "eyes.pick.right.fix"
+msgstr "Fix right eye"
+
+msgid "look.title"
+msgstr "How should the new eyes look?"
+
+msgid "look.preview"
+msgstr "Preview in the Scene view"
+
+msgid "look.preview.tip"
+msgstr "Shows the result on the avatar as you change settings. Nothing is saved until you press Install."
+
+msgid "look.preview.updating"
+msgstr "Updating preview…"
+
+msgid "look.preview.shown"
+msgstr "Preview shown"
+
+msgid "look.material"
+msgstr "Eye material"
+
+msgid "look.material.tip"
+msgstr "One of the DocMe eye materials. You can swap it later on the renderer."
+
+msgid "look.material.missing"
+msgstr "Pick an eye material to continue."
+
+msgid "look.build"
+msgstr "How to build the eye"
+
+msgid "look.mode.flat"
+msgstr "Flat eye in the socket"
+
+msgid "look.mode.flat.about"
+msgstr "A new flat eye behind the eyelids, the old one hidden. Works on every avatar."
+
+msgid "look.mode.reuse"
+msgstr "Reuse the avatar's own eye"
+
+msgid "look.mode.reuse.about"
+msgstr "The original eye surface gets the new shader, so it still moves with blinks and expressions. Best when the old eye is a flat sheet."
+
+msgid "look.size"
+msgstr "Size"
+
+msgid "look.size.tip"
+msgstr "1.0 = same size as the avatar's eye."
+
+msgid "look.width"
+msgstr "Width"
+
+msgid "look.height"
+msgstr "Height"
+
+msgid "look.sameSize"
+msgstr "Same width and height"
+
+msgid "look.depth"
+msgstr "Depth"
+
+msgid "look.depth.tip"
+msgstr "Forward (+) or deeper (−), in metres."
+
+msgid "look.upDown"
+msgstr "Up / down"
+
+msgid "look.apart"
+msgstr "Apart / together"
+
+msgid "look.apart.tip"
+msgstr "Apart (+) or toward the nose (−)."
+
+msgid "look.angleOut"
+msgstr "Angle outward"
+
+msgid "look.angleOut.tip"
+msgstr "Turns each eye toward its own outer side, in degrees. For faces whose eyes sit on the sides, so they do not thin out when seen from the side."
+
+msgid "look.tilt"
+msgstr "Tilt up / down"
+
+msgid "look.tilt.tip"
+msgstr "Tilts both eyes up (+) or down (−), in degrees."
+
+msgid "look.roll"
+msgstr "Roll"
+
+msgid "look.roll.tip"
+msgstr "Spins the eye around its view axis, in degrees."
+
+msgid "look.roll.left"
+msgstr "Roll (left eye)"
+
+msgid "look.mirrorRoll"
+msgstr "Mirror the roll on the right eye"
+
+msgid "look.mirrorRoll.tip"
+msgstr "On: the right eye rolls the opposite way, so both eyes tilt alike. Off: the right eye gets its own roll."
+
+msgid "look.roll.right"
+msgstr "Roll (right eye)"
+
+msgid "look.customMesh"
+msgstr "Custom eye mesh"
+
+msgid "look.customMesh.tip"
+msgstr "Empty = a generated flat quad. Use your own mesh if you have one."
+
+msgid "look.behindLids"
+msgstr "Place behind the eyelids"
+
+msgid "look.behindLids.tip"
+msgstr "Off puts the eye on the face surface instead of at the iris depth."
+
+msgid "look.hideOriginal"
+msgstr "Hide the original eyes"
+
+msgid "look.deleteOriginal"
+msgstr "Delete them instead of folding them away"
+
+msgid "look.deleteOriginal.tip"
+msgstr "Folding uses a blendshape and can be undone. Deleting removes the triangles, which stops other blendshapes from pulling them back into view."
+
+msgid "look.foldIntoHead"
+msgstr "Fold them into the head"
+
+msgid "look.flatten"
+msgstr "Flatten the eye"
+
+msgid "look.flatten.tip"
+msgstr "Projects the eye onto a flat plane facing forward."
+
+msgid "look.dropBack"
+msgstr "Remove the back half of a round eye"
+
+msgid "look.dropBack.tip"
+msgstr "A ball-shaped eye would fold onto itself when flattened. Turn off if the eye is already flat."
+
+msgid "look.shapes"
+msgstr "Blendshapes and the eye"
+
+msgid "look.shapes.tip"
+msgstr "Rewrites the avatar's blendshapes on the new eye. As authored: the eye stretches with the vertices. Scale evenly: the shape moves and scales the whole eye as one flat sheet. Move only: the shape moves the eye but never changes its size; use the shader's pupil slider for dilation."
+
+msgid "look.shapes.authored"
+msgstr "As authored (can stretch)"
+
+msgid "look.shapes.mean"
+msgstr "Scale evenly (mean fit)"
+
+msgid "look.shapes.max"
+msgstr "Scale evenly (max extent)"
+
+msgid "look.shapes.move"
+msgstr "Move only (never scale)"
+
+msgid "look.shapes.previewNote"
+msgstr "The preview keeps the blendshapes as authored. The evening is applied when you install."
+
+msgid "presets"
+msgstr "Presets"
+
+msgid "done.installed"
+msgstr "✓ Eyes installed"
+
+msgid "done.about"
+msgstr "Look at the avatar in the Scene view. Everything below is optional."
+
+msgid "done.meshMissing"
+msgstr "The generated eye mesh is gone, so the face shows nothing. This happens when a copy of this avatar was reverted or the file was deleted. Rebuild puts it back from the saved settings."
+
+msgid "done.modelChanged"
+msgstr "The model file changed since the eyes were installed. Re-apply to rebuild them on the new mesh."
+
+msgid "done.rebuild"
+msgstr "Rebuild from the saved settings"
+
+msgid "done.reapply"
+msgstr "Re-apply to the updated model"
+
+msgid "done.hide.title"
+msgstr "Something still showing over the eye?"
+
+msgid "done.hide.about"
+msgstr "Highlights or decorations from the old eye can sit on top of the new one. Select them in the Scene view, then press Hide."
+
+msgid "done.fineTune"
+msgstr "Fine-tune"
+
+msgid "done.reusedNote"
+msgstr "Reused eyes are rebuilt when you press Apply."
+
+msgid "done.apply"
+msgstr "Apply"
+
+msgid "done.showOriginal"
+msgstr "Show the original eyes for comparison"
+
+msgid "done.remove"
+msgstr "Remove the eyes (back to the original)"
+
+msgid "done.removed"
+msgstr "Removed. The avatar is back to its original eyes."
+
+msgid "done.hide.isEye"
+msgstr "That is the new eye itself, so it stays."
+
+msgid "look.preview.building"
+msgstr "Building preview…"
+
+msgid "report.clicks"
+msgstr "{0} clicks"
+
+msgid "report.clicks.one"
+msgstr "1 click"
+
+msgid "report.auto"
+msgstr "auto"
+
+msgid "report.clickElsewhere"
+msgstr "⚠ a click landed on '{0}', not on this avatar. Use auto again and re-click."
+
+msgid "report.deletedObject"
+msgstr "a deleted object"
+
+msgid "report.nothing"
+msgstr "⚠ Nothing was installed."
+
+msgid "report.reshaded"
+msgstr "Changed '{0}': new eye {1} triangles, {2} removed."
+
+msgid "report.hidden"
+msgstr "Changed '{0}': original eyes hidden ({1} triangles removed)."
+
+msgid "report.meshHidden"
+msgstr "⚠ that mesh is hidden in the scene, so you won't see the change."
+
+msgid "report.placed"
+msgstr "Placed {0} eye objects."
+
+msgid "report.placed.one"
+msgstr "Placed 1 eye object."
+
+msgid "preset.field"
+msgstr "Preset"
+
+msgid "preset.field.tip"
+msgstr "Saved settings. Choosing one loads it."
+
+msgid "preset.save"
+msgstr "Save"
+
+msgid "preset.save.tip"
+msgstr "Overwrite this preset with the current settings."
+
+msgid "preset.new"
+msgstr "New…"
+
+msgid "preset.new.tip"
+msgstr "Save the current settings as a new preset."
+
+msgid "preset.loaded"
+msgstr "Loaded preset '{0}'."
+
+msgid "preset.saved"
+msgstr "Saved preset '{0}'."
+
+msgid "preset.dialog.title"
+msgstr "Save Eye Preset"
+
+msgid "preset.dialog.message"
+msgstr "Save the current settings as a reusable preset."
+
+msgid "overlay.pick.left"
+msgstr "Click the left eye ({0} so far). Esc when done, Ctrl+Z undoes the last click."
+
+msgid "overlay.pick.right"
+msgstr "Click the right eye ({0} so far). Esc when done, Ctrl+Z undoes the last click."
+
+msgid "reapply.nothing"
+msgstr "Nothing installed."
+
+msgid "reapply.old"
+msgstr "⚠ Installed with an older version that didn't save its settings. Remove the eyes and install them once more, then they re-apply by themselves."
+
+msgid "reapply.done"
+msgstr "Eyes re-applied."
+
+msgid "reapply.failed"
+msgstr "⚠ Eyes could not be re-applied."
+
+msgid "reapply.dropped"
+msgstr "⚠ {0} eye clicks no longer match the mesh and were dropped (auto detection is used where none are left)."
+
+msgid "reapply.dropped.one"
+msgstr "⚠ 1 eye click no longer matches the mesh and was dropped (auto detection is used where none are left)."
