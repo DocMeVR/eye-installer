@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.6.1](https://github.com/DocMeVR/eye-installer/compare/1.6.0...1.6.1) (2026-11-15)
+
+
+### Bug Fixes
+
+* **i18n:** the Japanese intro on page 1 wraps at the edge instead of after "Hierarchy" ([ae49d42](https://github.com/DocMeVR/eye-installer/commit/ae49d425b146da4a8c0368cfd92c07030d919860))
+* **look:** Apply changes rebuilds an installed avatar with its own settings and eye picks ([ae49d42](https://github.com/DocMeVR/eye-installer/commit/ae49d425b146da4a8c0368cfd92c07030d919860))
+* **look:** the Advanced label column fits "Blendshapes and the eye", and its hint reads clearly ([ae49d42](https://github.com/DocMeVR/eye-installer/commit/ae49d425b146da4a8c0368cfd92c07030d919860))
+
 ## [1.6.0](https://github.com/DocMeVR/eye-installer/compare/1.5.0...1.6.0) (2026-11-15)
 
 
