@@ -84,8 +84,8 @@ namespace DocMe.EyeInstaller
             if (avatar != null) OnAvatarSet();
         }
 
-        void OnSceneSaving(UnityEngine.SceneManagement.Scene scene, string path) => EndPreview();
-        void OnPlayMode(PlayModeStateChange change) { if (change == PlayModeStateChange.ExitingEditMode) EndPreview(); }
+        void OnSceneSaving(UnityEngine.SceneManagement.Scene scene, string path) => EndTemporaryViews();
+        void OnPlayMode(PlayModeStateChange change) { if (change == PlayModeStateChange.ExitingEditMode) EndTemporaryViews(); }
 
         void OnDisable()
         {
@@ -102,7 +102,60 @@ namespace DocMe.EyeInstaller
             if (showOriginal) { SetOriginalEyesVisible(false); showOriginal = false; }
         }
 
-        void OnUndoRedo() { previews.Clear(); Repaint(); }
+        void OnUndoRedo()
+        {
+            previews.Clear();
+            var now = AvatarMeshes();
+            foreach (var m in avatarMeshes)
+                if (m != null && !now.Contains(m) && SourceModel.IsGenerated(AssetDatabase.GetAssetPath(m))) leftBehind = true;
+            avatarMeshes = now;
+            Repaint();
+        }
+
+        // The generated meshes the avatar shows, to notice when an undo drops one and leaves its file behind.
+        bool leftBehind;
+        HashSet<Mesh> avatarMeshes = new HashSet<Mesh>();
+
+        HashSet<Mesh> AvatarMeshes()
+        {
+            var set = new HashSet<Mesh>();
+            if (avatar == null) return set;
+            foreach (var r in avatar.GetComponentsInChildren<SkinnedMeshRenderer>(true)) if (r.sharedMesh != null) set.Add(r.sharedMesh);
+            foreach (var f in avatar.GetComponentsInChildren<MeshFilter>(true)) if (f.sharedMesh != null) set.Add(f.sharedMesh);
+            return set;
+        }
+
+        void DrawLeftBehind()
+        {
+            EditorGUILayout.HelpBox(L.Text("cleanup.undone"), MessageType.Info);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button(GC("cleanup.button"), GUILayout.Height(22)))
+                {
+                    leftBehind = false;
+                    GeneratedMeshes.OfferCleanup();
+                    GUIUtility.ExitGUI();
+                }
+                if (GUILayout.Button(GC("cleanup.dismiss"), GUILayout.Width(80), GUILayout.Height(22))) leftBehind = false;
+            }
+            EditorGUILayout.Space(6);
+        }
+
+        /// <summary>Ends the live preview and the original-eyes view in every open installer window. The VRChat SDK
+        /// calls this before it copies the avatar for an upload, which saves nothing and enters no Play mode.</summary>
+        public static void EndTemporaryViewsEverywhere()
+        {
+            foreach (var w in Resources.FindObjectsOfTypeAll<EyeInstallerWindow>()) w.EndTemporaryViews();
+        }
+
+        void EndTemporaryViews()
+        {
+            bool wasShowing = showOriginal, swapped = previewSwapped;
+            showOriginal = false;
+            EndPreview();
+            if (wasShowing && !swapped) SetOriginalEyesVisible(false);
+            Repaint();
+        }
 
 
         void SaveSettings()
@@ -234,8 +287,10 @@ namespace DocMe.EyeInstaller
             EnsureStyles();
             DrawHeader();
 
+            if (Event.current.type == EventType.Layout) avatarMeshes = AvatarMeshes();
             scroll = EditorGUILayout.BeginScrollView(scroll);
             EditorGUILayout.Space(6);
+            if (leftBehind) DrawLeftBehind();
             switch (page)
             {
                 case Page.Avatar: DrawAvatarPage(); break;
@@ -377,6 +432,7 @@ namespace DocMe.EyeInstaller
         {
             EndPreview();
             detected = null; seeds.Clear(); previews.Clear(); pickMode = null; log = "";
+            leftBehind = false; avatarMeshes = AvatarMeshes();
             hides.avatar = avatar; hides.Forget();
             SaveSettings();
             if (avatar == null) return;
@@ -423,8 +479,8 @@ namespace DocMe.EyeInstaller
                     using (new EditorGUILayout.HorizontalScope())
                     {
                         using (new EditorGUI.DisabledScope(pickMode == null || !seeds.TryGetValue(pickMode, out var l) || l.Count == 0))
-                            if (GUILayout.Button(L.Text("eyes.undoClick"))) RemoveLastPoint();
-                        if (GUILayout.Button(L.Text("eyes.useAuto"))) { seeds.Clear(); previews.Clear(); pickMode = null; SceneView.RepaintAll(); }
+                            if (GUILayout.Button(GC("eyes.undoClick"))) RemoveLastPoint();
+                        if (GUILayout.Button(GC("eyes.useAuto"))) { seeds.Clear(); previews.Clear(); pickMode = null; SceneView.RepaintAll(); }
                     }
             }
 
@@ -653,7 +709,7 @@ namespace DocMe.EyeInstaller
                 if (deformWithFace)
                 {
                     GUILayout.Label(L.Text("done.reusedNote"), _hint);
-                    if (GUILayout.Button(L.Text("done.apply"), GUILayout.Height(24))) Install();
+                    if (GUILayout.Button(GC("done.apply"), GUILayout.Height(24))) Install();
                 }
 
                 EditorGUI.BeginChangeCheck();
@@ -675,7 +731,7 @@ namespace DocMe.EyeInstaller
 
                 EditorGUILayout.Space(6);
                 GUI.backgroundColor = new Color(0.92f, 0.55f, 0.55f);
-                if (GUILayout.Button(L.Text("done.remove"), GUILayout.Height(24)))
+                if (GUILayout.Button(GC("done.remove"), GUILayout.Height(24)))
                 {
                     HideIslandsCore.Revert(avatar);
                     EyeInstallerCore.Revert(avatar);

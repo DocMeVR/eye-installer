@@ -3,6 +3,21 @@ msgstr ""
 "Language: en-US\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
+msgid "cleanup.undone"
+msgstr "Undo took off a generated mesh, but its file is still in the project. Face copies can be hundreds of MB."
+
+msgid "cleanup.button"
+msgstr "Delete unused mesh files…"
+
+msgid "cleanup.button.tip"
+msgstr "Looks for mesh files from earlier installs that nothing uses any more, and asks before deleting them."
+
+msgid "cleanup.dismiss"
+msgstr "Not now"
+
+msgid "cleanup.dismiss.tip"
+msgstr "Hides this note. Tools > DocMe > Delete Unused Generated Meshes does the same cleanup later."
+
 msgid "window.title"
 msgstr "DocMe Eyes"
 
@@ -51,6 +66,9 @@ msgstr "Drag your avatar from the Hierarchy into the field below. If it is selec
 msgid "avatar.field"
 msgstr "Avatar"
 
+msgid "avatar.field.tip"
+msgstr "The avatar's top object, the one with the Animator and the VRC Avatar Descriptor."
+
 msgid "avatar.useSelected"
 msgstr "Use selected: {0}"
 
@@ -84,8 +102,14 @@ msgstr "Click the iris in the Scene view. Each click adds one piece; press Esc o
 msgid "eyes.undoClick"
 msgstr "Undo last click"
 
+msgid "eyes.undoClick.tip"
+msgstr "Takes back your last click."
+
 msgid "eyes.useAuto"
 msgstr "Use auto again"
+
+msgid "eyes.useAuto.tip"
+msgstr "Forgets your clicks and goes back to the eyes found automatically."
 
 msgid "advanced"
 msgstr "Advanced"
@@ -162,11 +186,20 @@ msgstr "1.0 = same size as the avatar's eye."
 msgid "look.width"
 msgstr "Width"
 
+msgid "look.width.tip"
+msgstr "Width of the new eye. 1.0 = as wide as the avatar's eye."
+
 msgid "look.height"
 msgstr "Height"
 
+msgid "look.height.tip"
+msgstr "Height of the new eye. 1.0 = as tall as the avatar's eye."
+
 msgid "look.sameSize"
 msgstr "Same width and height"
+
+msgid "look.sameSize.tip"
+msgstr "One Size slider for both. Off gives Width and Height a slider each."
 
 msgid "look.depth"
 msgstr "Depth"
@@ -176,6 +209,9 @@ msgstr "Forward (+) or deeper (−), in metres."
 
 msgid "look.upDown"
 msgstr "Up / down"
+
+msgid "look.upDown.tip"
+msgstr "Up (+) or down (−), in metres."
 
 msgid "look.apart"
 msgstr "Apart / together"
@@ -228,6 +264,9 @@ msgstr "Off puts the eye on the face surface instead of at the iris depth."
 msgid "look.hideOriginal"
 msgstr "Hide the original eyes"
 
+msgid "look.hideOriginal.tip"
+msgstr "Off leaves the avatar's old eyes in place, where they can poke through the new ones."
+
 msgid "look.deleteOriginal"
 msgstr "Delete them instead of folding them away"
 
@@ -236,6 +275,9 @@ msgstr "Folding uses a blendshape and can be undone. Deleting removes the triang
 
 msgid "look.foldIntoHead"
 msgstr "Fold them into the head"
+
+msgid "look.foldIntoHead.tip"
+msgstr "Shrinks the old eyes to a point inside the head. Off shrinks them just behind where they were."
 
 msgid "look.flatten"
 msgstr "Flatten the eye"
@@ -306,11 +348,20 @@ msgstr "Reused eyes are rebuilt when you press Apply."
 msgid "done.apply"
 msgstr "Apply"
 
+msgid "done.apply.tip"
+msgstr "Rebuilds the reused eyes with the settings above."
+
 msgid "done.showOriginal"
 msgstr "Show the original eyes for comparison"
 
+msgid "done.showOriginal.tip"
+msgstr "Shows the old eyes while ticked. Turns itself off before you save, upload or press Play."
+
 msgid "done.remove"
 msgstr "Remove the eyes (back to the original)"
+
+msgid "done.remove.tip"
+msgstr "Puts the original meshes back and deletes the files this install made."
 
 msgid "done.removed"
 msgstr "Removed. The avatar is back to its original eyes."

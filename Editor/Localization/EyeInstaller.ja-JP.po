@@ -4,6 +4,26 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "X-DocMe-Reviewed: no\n"
 
+#. en: Undo took off a generated mesh, but its file is still in the project. Face copies can be hundreds of MB.
+msgid "cleanup.undone"
+msgstr "元に戻したことで生成メッシュが外れましたが、ファイルはプロジェクトに残っています。顔のコピーは数百 MB になることもあります。"
+
+#. en: Delete unused mesh files…
+msgid "cleanup.button"
+msgstr "使われていないメッシュファイルを削除…"
+
+#. en: Looks for mesh files from earlier installs that nothing uses any more, and asks before deleting them.
+msgid "cleanup.button.tip"
+msgstr "以前のインストールで作られ、今は使われていないメッシュファイルを探します。削除の前に確認があります。"
+
+#. en: Not now
+msgid "cleanup.dismiss"
+msgstr "今はしない"
+
+#. en: Hides this note. Tools > DocMe > Delete Unused Generated Meshes does the same cleanup later.
+msgid "cleanup.dismiss.tip"
+msgstr "この表示を閉じます。あとで Tools > DocMe > Delete Unused Generated Meshes から同じ削除ができます。"
+
 #. en: DocMe Eyes
 msgid "window.title"
 msgstr "DocMe アイ"
@@ -68,6 +88,10 @@ msgstr "Hierarchy からアバターを下の欄にドラッグしてくださ�
 msgid "avatar.field"
 msgstr "アバター"
 
+#. en: The avatar's top object, the one with the Animator and the VRC Avatar Descriptor.
+msgid "avatar.field.tip"
+msgstr "アバターの一番上のオブジェクト（Animator と VRC Avatar Descriptor が付いているもの）。"
+
 #. en: Use selected: {0}
 msgid "avatar.useSelected"
 msgstr "選択中の「{0}」を使う"
@@ -112,9 +136,17 @@ msgstr "シーンで虹彩をクリックしてください。クリックごと
 msgid "eyes.undoClick"
 msgstr "最後のクリックを取り消す"
 
+#. en: Takes back your last click.
+msgid "eyes.undoClick.tip"
+msgstr "最後のクリックを取り消します。"
+
 #. en: Use auto again
 msgid "eyes.useAuto"
 msgstr "自動検出に戻す"
+
+#. en: Forgets your clicks and goes back to the eyes found automatically.
+msgid "eyes.useAuto.tip"
+msgstr "クリックした内容を消して、自動で見つけた目に戻します。"
 
 #. en: Advanced
 msgid "advanced"
@@ -216,13 +248,25 @@ msgstr "1.0 ＝ 元の目と同じ大きさ。"
 msgid "look.width"
 msgstr "幅"
 
+#. en: Width of the new eye. 1.0 = as wide as the avatar's eye.
+msgid "look.width.tip"
+msgstr "新しい目の幅。1.0 でアバターの目と同じ幅になります。"
+
 #. en: Height
 msgid "look.height"
 msgstr "高さ"
 
+#. en: Height of the new eye. 1.0 = as tall as the avatar's eye.
+msgid "look.height.tip"
+msgstr "新しい目の高さ。1.0 ならアバターの目と同じ高さ。"
+
 #. en: Same width and height
 msgid "look.sameSize"
 msgstr "幅と高さを同じにする"
+
+#. en: One Size slider for both. Off gives Width and Height a slider each.
+msgid "look.sameSize.tip"
+msgstr "幅と高さを 1 本のスライダーでまとめて変えます。オフで別々に調整できます。"
 
 #. en: Depth
 msgid "look.depth"
@@ -235,6 +279,10 @@ msgstr "前へ(＋)／奥へ(−)、メートル。"
 #. en: Up / down
 msgid "look.upDown"
 msgstr "上下"
+
+#. en: Up (+) or down (−), in metres.
+msgid "look.upDown.tip"
+msgstr "上へ(＋)／下へ(−)、メートル。"
 
 #. en: Apart / together
 msgid "look.apart"
@@ -304,6 +352,10 @@ msgstr "オフにすると目を顔の表面に置きます。"
 msgid "look.hideOriginal"
 msgstr "元の目を隠す"
 
+#. en: Off leaves the avatar's old eyes in place, where they can poke through the new ones.
+msgid "look.hideOriginal.tip"
+msgstr "オフにすると元の目が残り、新しい目を突き抜けて見えることがあります。"
+
 #. en: Delete them instead of folding them away
 msgid "look.deleteOriginal"
 msgstr "畳まずに削除する"
@@ -315,6 +367,10 @@ msgstr "畳む方法はブレンドシェイプで、元に戻せます。削除
 #. en: Fold them into the head
 msgid "look.foldIntoHead"
 msgstr "頭の中に畳み込む"
+
+#. en: Shrinks the old eyes to a point inside the head. Off shrinks them just behind where they were.
+msgid "look.foldIntoHead.tip"
+msgstr "元の目を頭の中の一点に縮めます。オフだと元の位置のすぐ後ろに縮みます。"
 
 #. en: Flatten the eye
 msgid "look.flatten"
@@ -408,13 +464,25 @@ msgstr "再利用した目は「反映」を押すと作り直されます。"
 msgid "done.apply"
 msgstr "反映"
 
+#. en: Rebuilds the reused eyes with the settings above.
+msgid "done.apply.tip"
+msgstr "上の設定で目を作り直します。"
+
 #. en: Show the original eyes for comparison
 msgid "done.showOriginal"
 msgstr "比較のため元の目を表示"
 
+#. en: Shows the old eyes while ticked. Turns itself off before you save, upload or press Play.
+msgid "done.showOriginal.tip"
+msgstr "チェックしている間だけ元の目を表示。保存・アップロード・再生の前に自動でオフになります。"
+
 #. en: Remove the eyes (back to the original)
 msgid "done.remove"
 msgstr "目を削除（元に戻す）"
+
+#. en: Puts the original meshes back and deletes the files this install made.
+msgid "done.remove.tip"
+msgstr "元のメッシュに戻し、このインストールで作ったファイルを削除します。"
 
 #. en: Removed. The avatar is back to its original eyes.
 msgid "done.removed"

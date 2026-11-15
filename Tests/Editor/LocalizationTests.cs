@@ -1,5 +1,6 @@
 using DocMe.HideIslands;
 using DocMe.HideIslands.Tests;
+using System.Linq;
 using NUnit.Framework;
 
 namespace DocMe.EyeInstaller.Tests
@@ -21,6 +22,27 @@ namespace DocMe.EyeInstaller.Tests
         {
             KeyUse.AssertDefined(KeyUse.Scan(Editor, "L", "GC"), KeyUse.Load(L.Table));
             KeyUse.AssertDefined(KeyUse.Scan(Editor, "HideL", "HGC"), KeyUse.Load(HideIslands.L.Table));
+        }
+
+        [Test]
+        public void EveryLabelHasATooltip()
+        {
+            KeyUse.AssertEveryLabelHasTip(KeyUse.Scan(Editor, "L", "GC"), KeyUse.Load(L.Table));
+            KeyUse.AssertEveryLabelHasTip(KeyUse.Scan(Editor, "HideL", "HGC"), KeyUse.Load(HideIslands.L.Table));
+        }
+
+        [Test]
+        public void TheUploadCallbackIsFoundAndLetsTheBuildGoOn()
+        {
+            var type = typeof(EyeInstallerWindow).Assembly.GetType("DocMe.EyeInstaller.EyeInstallerBuildCallback");
+            Assert.IsNotNull(type, "the VRChat SDK only calls a class it can find");
+            Assert.IsTrue(type.GetInterfaces().Any(i => i.Name == "IVRCSDKBuildRequestedCallback"));
+            var callback = System.Activator.CreateInstance(type);
+            Assert.Less((int)type.GetProperty("callbackOrder").GetValue(callback), 0, "runs before tools that read the avatar");
+            if (UnityEngine.Resources.FindObjectsOfTypeAll<EyeInstallerWindow>().Length > 0) return; // would end the creator's own preview
+            var method = type.GetMethod("OnBuildRequested");
+            var buildType = System.Enum.ToObject(method.GetParameters()[0].ParameterType, 0);
+            Assert.IsTrue((bool)method.Invoke(callback, new[] { buildType }));
         }
 
         [Test]
