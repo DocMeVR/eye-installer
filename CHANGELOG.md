@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.6.0](https://github.com/DocMeVR/eye-installer/compare/1.5.0...1.6.0) (2026-11-15)
+
+
+### Features
+
+* **cleanup:** offer to delete the mesh file an undone install leaves behind ([4349e72](https://github.com/DocMeVR/eye-installer/commit/4349e72329c6138da84448314118cc7b258343b4))
+* **ui:** tooltips for every labelled control ([4349e72](https://github.com/DocMeVR/eye-installer/commit/4349e72329c6138da84448314118cc7b258343b4))
+
+
+### Bug Fixes
+
+* **upload:** switch the preview and the original eyes off before an upload, a save or Play mode ([4349e72](https://github.com/DocMeVR/eye-installer/commit/4349e72329c6138da84448314118cc7b258343b4))
+
 ## [1.5.0](https://github.com/DocMeVR/eye-installer/compare/1.4.3...1.5.0) (2026-11-08)
 
 
