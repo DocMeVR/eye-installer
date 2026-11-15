@@ -54,6 +54,9 @@ namespace DocMe.EyeInstaller
         bool showOriginal = false;
         string pickMode;                 // "L" / "R" / HideKey while clicking in the Scene view, else null
         readonly Dictionary<string, List<IslandPick>> seeds = new Dictionary<string, List<IslandPick>>();
+        // The eye picks the installed avatar was built with. They only resolve on the uncovered original mesh, so they are
+        // turned into seeds when an install or a preview runs, for every eye the creator has not clicked again.
+        readonly List<DocMePick> savedPicks = new List<DocMePick>();
 
         List<EyeData> detected;
         string detectLog = "";
@@ -100,6 +103,43 @@ namespace DocMe.EyeInstaller
             previews.Clear();
             pickMode = null;
             if (showOriginal) { SetOriginalEyesVisible(false); showOriginal = false; }
+        }
+
+        // Where the boxed controls of the guide pictures are drawn, in screen points. Only the docs capture sets it.
+        static System.Action<string, Rect> controlRects;
+
+        void Mark(string name)
+        {
+            if (controlRects != null && Event.current.type == EventType.Repaint) Report(name, GUILayoutUtility.GetLastRect());
+        }
+
+        void MarkField(string name)
+        {
+            if (controlRects == null || Event.current.type != EventType.Repaint) return;
+            var r = GUILayoutUtility.GetLastRect();
+            r.xMin += EditorGUIUtility.labelWidth;
+            Report(name, r);
+        }
+
+        void MarkText(string name, GUIStyle style, string text)
+        {
+            if (controlRects == null || Event.current.type != EventType.Repaint) return;
+            var r = GUILayoutUtility.GetLastRect();
+            r.width = Mathf.Min(r.width, style.CalcSize(new GUIContent(text)).x);
+            Report(name, r);
+        }
+
+        void MarkHere(string name)
+        {
+            if (controlRects == null) return;
+            var r = GUILayoutUtility.GetRect(0f, 0f);
+            if (Event.current.type == EventType.Repaint) Report(name, r);
+        }
+
+        static void Report(string name, Rect r)
+        {
+            Vector2 a = GUIUtility.GUIToScreenPoint(r.min), b = GUIUtility.GUIToScreenPoint(r.max);
+            controlRects(name, Rect.MinMaxRect(a.x, a.y, b.x, b.y));
         }
 
         void OnUndoRedo()
@@ -299,6 +339,7 @@ namespace DocMe.EyeInstaller
                 case Page.Done:   DrawDonePage(); break;
             }
             EditorGUILayout.Space(6);
+            MarkHere("pageEnd");
             EditorGUILayout.EndScrollView();
 
             DrawFooter();
@@ -354,6 +395,7 @@ namespace DocMe.EyeInstaller
 
         void DrawFooter()
         {
+            MarkHere("footerTop");
             EditorGUILayout.Space(2);
             using (new EditorGUILayout.HorizontalScope())
             {
@@ -367,17 +409,29 @@ namespace DocMe.EyeInstaller
                 {
                     case Page.Avatar:
                         using (new EditorGUI.DisabledScope(!CanReach(Page.Eyes)))
-                            if (GUILayout.Button(L.Text("nav.next"), GUILayout.Height(26), GUILayout.Width(110))) GoTo(Page.Eyes);
+                        {
+                            bool next = GUILayout.Button(L.Text("nav.next"), GUILayout.Height(26), GUILayout.Width(110));
+                            Mark("next");
+                            if (next) GoTo(Page.Eyes);
+                        }
                         break;
                     case Page.Eyes:
                         using (new EditorGUI.DisabledScope(!CanReach(Page.Look)))
-                            if (GUILayout.Button(L.Text("nav.looksRight"), GUILayout.Height(26), GUILayout.Width(150))) GoTo(Page.Look);
+                        {
+                            bool looksRight = GUILayout.Button(L.Text("nav.looksRight"), GUILayout.Height(26), GUILayout.Width(150));
+                            Mark("looks-right");
+                            if (looksRight) GoTo(Page.Look);
+                        }
                         break;
                     case Page.Look:
                         GUI.backgroundColor = new Color(0.55f, 0.85f, 0.55f);
                         using (new EditorGUI.DisabledScope(material == null))
-                            if (GUILayout.Button(HasInstall() ? L.Text("nav.applyChanges") : L.Text("nav.install"), GUILayout.Height(28), GUILayout.Width(150)))
-                                Install();
+                        {
+                            bool installed = HasInstall();
+                            bool apply = GUILayout.Button(installed ? L.Text("nav.applyChanges") : L.Text("nav.install"), GUILayout.Height(28), GUILayout.Width(150));
+                            Mark(installed ? "apply" : "install");
+                            if (apply) Install();
+                        }
                         GUI.backgroundColor = Color.white;
                         break;
                     case Page.Done:
@@ -431,14 +485,58 @@ namespace DocMe.EyeInstaller
         void OnAvatarSet()
         {
             EndPreview();
-            detected = null; seeds.Clear(); previews.Clear(); pickMode = null; log = "";
+            detected = null; seeds.Clear(); savedPicks.Clear(); previews.Clear(); pickMode = null; log = "";
             leftBehind = false; avatarMeshes = AvatarMeshes();
             hides.avatar = avatar; hides.Forget();
             SaveSettings();
             if (avatar == null) return;
             detected = EyeAvatarDetector.Detect(avatar, out detectLog);
-            if (HasInstall()) { if (hides.Count > 0) hides.Reload(); page = Page.Done; }
+            if (HasInstall()) { LoadFromInstall(); if (hides.Count > 0) hides.Reload(); page = Page.Done; }
             SceneView.RepaintAll();
+        }
+
+        /// <summary>Takes the settings and eye picks the avatar was installed with, so Apply changes rebuilds this avatar's
+        /// own eyes and not the settings last used on another avatar. Settings load once per install: OnEnable runs this
+        /// again after every script reload, and slider changes not applied yet must survive that.</summary>
+        void LoadFromInstall()
+        {
+            savedPicks.Clear();
+            var marker = avatar != null ? avatar.GetComponent<DocMeEyeInstall>() : null;
+            var r = marker != null && marker.appliedAt != 0 ? marker.recipe : null;
+            if (r == null) return;
+            if (r.picks != null) savedPicks.AddRange(r.picks);
+
+            string key = UnityEditor.GlobalObjectId.GetGlobalObjectIdSlow(marker) + ":" + marker.appliedAt;
+            if (EditorPrefs.GetString(PK + "loadedInstall", "") == key) return;
+            EditorPrefs.SetString(PK + "loadedInstall", key);
+
+            if (r.material != null) material = r.material;
+            eyeMesh = r.eyeMesh;
+            hideOriginal = r.hideOriginal; inSocket = r.inSocket; deformWithFace = r.deformWithFace; flattenEye = r.flattenEye;
+            dropBackFaces = r.dropBackFaces; sinkIntoHead = r.sinkIntoHead; deleteOriginal = r.deleteOriginal;
+            widthFactor = r.widthFactor; heightFactor = r.heightFactor;
+            if (!Mathf.Approximately(widthFactor, heightFactor)) lockAspect = false;
+            depthOffset = r.depthOffset; verticalOffset = r.verticalOffset; horizontalOffset = r.horizontalOffset;
+            rollOffset = r.rollOffset; rollRightOffset = r.rollRightOffset; angleOut = r.angleOut; angleUp = r.angleUp;
+            rollMode = r.rollMode == EyeInstallerCore.RollSame ? EyeInstallerCore.RollMirror : r.rollMode;
+            evenEyeShapes = r.evenEyeShapes;
+            eyeRenderer = r.eyeRenderers != null && r.eyeRenderers.Count == 1 ? r.eyeRenderers[0] : null;
+            SaveSettings();
+        }
+
+        /// <summary>The creator's clicks first; the saved picks of the install for every eye without new clicks.</summary>
+        void AddPicks(List<EyeData> eyes)
+        {
+            foreach (var d in eyes)
+                if (seeds.TryGetValue(d.label, out var list) && list.Count > 0) d.seeds = new List<IslandPick>(list);
+            if (savedPicks.Count == 0) return;
+            var cache = new SourceModel.BakeCache();
+            foreach (var p in savedPicks)
+            {
+                var d = eyes.Find(x => x.label == p.label);
+                if (d == null || (seeds.TryGetValue(p.label, out var own) && own.Count > 0)) continue;
+                if (SourceModel.TryResolve(avatar, p, cache, out var seed)) d.seeds.Add(seed);
+            }
         }
 
         void DrawDetectionStatus()
@@ -480,7 +578,7 @@ namespace DocMe.EyeInstaller
                     {
                         using (new EditorGUI.DisabledScope(pickMode == null || !seeds.TryGetValue(pickMode, out var l) || l.Count == 0))
                             if (GUILayout.Button(GC("eyes.undoClick"))) RemoveLastPoint();
-                        if (GUILayout.Button(GC("eyes.useAuto"))) { seeds.Clear(); previews.Clear(); pickMode = null; SceneView.RepaintAll(); }
+                        if (GUILayout.Button(GC("eyes.useAuto"))) { seeds.Clear(); savedPicks.Clear(); previews.Clear(); pickMode = null; SceneView.RepaintAll(); }
                     }
             }
 
@@ -543,6 +641,7 @@ namespace DocMe.EyeInstaller
                 EditorGUI.BeginChangeCheck();
                 material = (Material)EditorGUILayout.ObjectField(GC("look.material"),
                     material, typeof(Material), false);
+                MarkField("target");
                 if (material == null) GUILayout.Label(L.Text("look.material.missing"), _warn);
 
                 EditorGUILayout.Space(6);
@@ -571,6 +670,8 @@ namespace DocMe.EyeInstaller
             advancedLook = EditorGUILayout.Foldout(advancedLook, L.Text("advanced"), true);
             if (advancedLook)
             {
+                float labelWidth = EditorGUIUtility.labelWidth;
+                EditorGUIUtility.labelWidth = Mathf.Max(labelWidth, AdvancedLabelWidth());
                 EditorGUI.indentLevel++;
                 EditorGUI.BeginChangeCheck();
                 lockAspect = EditorGUILayout.ToggleLeft(GC("look.sameSize"), lockAspect);
@@ -605,15 +706,28 @@ namespace DocMe.EyeInstaller
                         dropBackFaces = EditorGUILayout.ToggleLeft(GC("look.dropBack"), dropBackFaces);
                     evenEyeShapes = EditorGUILayout.Popup(GC("look.shapes"),
                         evenEyeShapes, new[] { L.Text("look.shapes.authored"), L.Text("look.shapes.mean"), L.Text("look.shapes.max"), L.Text("look.shapes.move") });
+                    MarkField("move");
                     if (evenEyeShapes != 0 && previewOn)
                         GUILayout.Label(L.Text("look.shapes.previewNote"), _hint);
                 }
                 if (EditorGUI.EndChangeCheck()) { SaveSettings(); MarkPreviewDirty(); }
                 EditorGUI.indentLevel--;
+                EditorGUIUtility.labelWidth = labelWidth;
             }
 
             showPresets = EditorGUILayout.Foldout(showPresets, L.Text("presets"), true);
             if (showPresets) { EditorGUI.indentLevel++; DrawPresetBar(); EditorGUI.indentLevel--; }
+        }
+
+        /// <summary>Room for the longest label in front of a field in the Advanced block, indent included, in the current
+        /// language ("Blendshapes and the eye" was cut off at the default column).</summary>
+        static float AdvancedLabelWidth()
+        {
+            float widest = 0f;
+            foreach (var key in new[] { "look.depth", "look.upDown", "look.apart", "look.angleOut", "look.tilt", "look.roll",
+                                        "look.roll.left", "look.roll.right", "look.customMesh", "look.shapes" })
+                widest = Mathf.Max(widest, EditorStyles.label.CalcSize(new GUIContent(L.Text(key))).x);
+            return widest + 15f + 8f;
         }
 
         void DrawModeChoice(bool deform, string title, string body)
@@ -636,6 +750,7 @@ namespace DocMe.EyeInstaller
             if (!HasInstall()) { GoTo(Page.Avatar); return; }
 
             GUILayout.Label(L.Text("done.installed"), _ok);
+            MarkText("installed", _ok, L.Text("done.installed"));
             GUILayout.Label(L.Text("done.about"), _hint);
 
             bool missing = DocMeReapply.HasMissingMesh(avatar);
@@ -649,6 +764,7 @@ namespace DocMe.EyeInstaller
                 {
                     log = DocMeReapply.ReapplyAll(avatar);
                     seeds.Clear(); previews.Clear(); showOriginal = false;
+                    LoadFromInstall();
                     hides.Reload();
                 }
             }
@@ -667,8 +783,11 @@ namespace DocMe.EyeInstaller
                     { pickMode = hiding ? null : HideKey; SceneView.RepaintAll(); }
                     GUI.backgroundColor = selected > 0 ? new Color(0.6f, 0.9f, 0.65f) : Color.white;
                     using (new EditorGUI.DisabledScope(selected == 0))
-                        if (GUILayout.Button(new GUIContent(selected == 0 ? HideL.Text("hide.button.none") : HideL.Count(selected, "hide.button", selected), HideL.Tip("hide.button.tip")), GUILayout.Height(26), GUILayout.Width(160)))
-                            HideSelected();
+                    {
+                        bool hide = GUILayout.Button(new GUIContent(selected == 0 ? HideL.Text("hide.button.none") : HideL.Count(selected, "hide.button", selected), HideL.Tip("hide.button.tip")), GUILayout.Height(26), GUILayout.Width(160));
+                        Mark("hide");
+                        if (hide) HideSelected();
+                    }
                     GUI.backgroundColor = Color.white;
                 }
                 using (new EditorGUILayout.HorizontalScope())
@@ -735,7 +854,7 @@ namespace DocMe.EyeInstaller
                 {
                     HideIslandsCore.Revert(avatar);
                     EyeInstallerCore.Revert(avatar);
-                    hides.Forget(); previews.Clear(); showOriginal = false; pickMode = null;
+                    hides.Forget(); previews.Clear(); showOriginal = false; pickMode = null; savedPicks.Clear();
                     log = L.Text("done.removed");
                     GoTo(Page.Look);
                 }
@@ -800,10 +919,10 @@ namespace DocMe.EyeInstaller
             if (HasInstall()) EyeInstallerCore.Revert(avatar);
 
             detected = EyeAvatarDetector.Detect(avatar, out detectLog);
-            foreach (var d in detected)
-                if (seeds.TryGetValue(d.label, out var list) && list.Count > 0) d.seeds = new List<IslandPick>(list);
+            AddPicks(detected);
             EyeInstallerCore.Install(avatar, detected, BuildOptions());
             SaveSettings();
+            LoadFromInstall();
             showOriginal = false;
 
             log = DescribeInstall();
@@ -855,8 +974,7 @@ namespace DocMe.EyeInstaller
                 }
 
                 var eyes = EyeAvatarDetector.Detect(avatar, out _);
-                foreach (var d in eyes)
-                    if (seeds.TryGetValue(d.label, out var list) && list.Count > 0) d.seeds = new List<IslandPick>(list);
+                AddPicks(eyes);
                 preview = EyeInstallerCore.Preview(avatar, eyes, BuildOptions());
             }
             finally

@@ -310,7 +310,7 @@ msgid "look.shapes.move"
 msgstr "Move only (never scale)"
 
 msgid "look.shapes.previewNote"
-msgstr "The preview keeps the blendshapes as authored. The evening is applied when you install."
+msgstr "The preview shows the blendshapes as authored. Install applies the change."
 
 msgid "presets"
 msgstr "Presets"

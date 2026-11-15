@@ -82,7 +82,7 @@ msgstr "どのアバターに目を入れますか？"
 
 #. en: Drag your avatar from the Hierarchy into the field below. If it is selected already, it is picked up for you.
 msgid "avatar.intro"
-msgstr "Hierarchy からアバターを下の欄にドラッグしてください。選択中なら自動で入ります。"
+msgstr "Hierarchyからアバターを下の欄にドラッグしてください。選択中なら自動で入ります。"
 
 #. en: Avatar
 msgid "avatar.field"
@@ -412,9 +412,9 @@ msgstr "均等に拡大（最大）"
 msgid "look.shapes.move"
 msgstr "移動のみ（拡大しない）"
 
-#. en: The preview keeps the blendshapes as authored. The evening is applied when you install.
+#. en: The preview shows the blendshapes as authored. Install applies the change.
 msgid "look.shapes.previewNote"
-msgstr "プレビューではブレンドシェイプは元のままです。均等化はインストール時に適用されます。"
+msgstr "プレビューではブレンドシェイプは元のままです。変更はインストール時に適用されます。"
 
 #. en: Presets
 msgid "presets"
